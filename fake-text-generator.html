@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipts</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161c;
+    --panel: #1b1e26;
+    --panel-2: #21242e;
+    --line: #2c303c;
+    --ink: #e9e9ee;
+    --ink-dim: #9397a6;
+    --accent: #f5a623;
+    --accent-dim: #b97e1d;
+    --danger: #e0654f;
+    --imessage-blue: #2b8aff;
+    --imessage-gray: #29292c;
+    --android-green: #1e8e5a;
+    --android-gray: #2c2f36;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(245,166,35,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(43,138,255,0.05), transparent 40%);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height:100vh;
+  }
+  @font-face {
+    font-family: 'Inter';
+    src: local('Inter');
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand-mark{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color: var(--accent);
+    border:1px solid var(--accent-dim);
+    padding:3px 7px;
+    border-radius:4px;
+  }
+  .brand-name{
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .brand-sub{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size:11.5px;
+    color: var(--ink-dim);
+    letter-spacing:0.03em;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns: 400px 1fr;
+    gap: 28px;
+    padding: 28px 32px 60px;
+  }
+  @media (max-width: 880px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  .tabbar{
+    display:flex;
+    gap:4px;
+    padding: 14px 32px 0;
+    flex-wrap: wrap;
+  }
+  .tab-btn{
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight:600;
+    padding: 9px 14px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--line);
+    border-bottom: none;
+    background: var(--bg);
+    color: var(--ink-dim);
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+    white-space: nowrap;
+  }
+  .tab-btn.active{
+    background: var(--panel);
+    color: var(--ink);
+    border-bottom: 1px solid var(--panel);
+  }
+  .tabbar-line{
+    border-bottom: 1px solid var(--line);
+    margin: 0 32px;
+  }
+
+  /* --- control panel --- */
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .section-label{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin: 0 0 10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+  .field{
+    margin-bottom: 14px;
+  }
+  .field label{
+    display:block;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+  .field input[type=text], .field textarea{
+    width:100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    padding: 9px 11px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus{
+    outline: none;
+    border-color: var(--accent-dim);
+  }
+  .row2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  .photo-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .photo-row input[type=file]{
+    flex:1;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+  }
+  .btn-ghost{
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--danger);
+    font-size: 11.5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .style-toggle{
+    display:flex;
+    gap:8px;
+  }
+  .style-toggle button{
+    flex:1;
+    padding:9px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink-dim);
+    font-size:13px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .style-toggle button.active{
+    border-color: var(--accent);
+    color: var(--ink);
+    background: rgba(245,166,35,0.08);
+  }
+
+  .composer{
+    background: var(--panel-2);
+    border:1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .sender-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .sender-toggle button{
+    flex:1;
+    padding:7px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink-dim);
+    font-size:12.5px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .sender-toggle button.active-me{
+    border-color: var(--imessage-blue);
+    color: #cfe4ff;
+    background: rgba(43,138,255,0.12);
+  }
+  .sender-toggle button.active-them{
+    border-color: #565a66;
+    color: var(--ink);
+    background: rgba(255,255,255,0.05);
+  }
+  .composer textarea{
+    width:100%;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:7px;
+    color:var(--ink);
+    padding:9px 10px;
+    font-size:13.5px;
+    font-family:inherit;
+    min-height:56px;
+    resize:vertical;
+  }
+  .composer-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:8px;
+  }
+  .type-toggle{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .type-toggle button{
+    flex:1;
+    padding:6px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink-dim);
+    font-size:11.5px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .type-toggle button.active{
+    border-color: var(--accent);
+    color: var(--ink);
+    background: rgba(245,166,35,0.08);
+  }
+  .loc-fields input{
+    width:100%;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:7px;
+    color:var(--ink);
+    padding:9px 10px;
+    font-size:13px;
+    font-family:inherit;
+    margin-bottom:8px;
+  }
+  .btn{
+    font-family: inherit;
+    font-size: 13px;
+    font-weight:600;
+    padding: 8px 16px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-outline{
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    display:inline-flex;
+    align-items:center;
+  }
+  .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
+  .btn-accent{
+    background: var(--accent);
+    color: #1a1204;
+  }
+  .btn-accent:hover{ background:#ffb63d; }
+
+  .msg-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    max-height: 320px;
+    overflow-y:auto;
+    padding-right:2px;
+  }
+  .msg-row{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    background: var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+  }
+  .msg-row .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:9.5px;
+    padding:2px 5px;
+    border-radius:4px;
+    white-space:nowrap;
+    margin-top:2px;
+  }
+  .tag.me{ background: rgba(43,138,255,0.18); color:#7fb8ff; }
+  .tag.them{ background: rgba(255,255,255,0.09); color: var(--ink-dim); }
+  .msg-row .txt{
+    flex:1;
+    font-size:12.5px;
+    color: var(--ink);
+    line-height:1.4;
+    word-break: break-word;
+  }
+  .msg-row .thumb{
+    width:32px;
+    height:32px;
+    object-fit:cover;
+    border-radius:5px;
+    flex-shrink:0;
+  }
+  .msg-row .loc-pin{
+    width:32px;
+    height:32px;
+    border-radius:5px;
+    flex-shrink:0;
+    background: #e0654f;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:15px;
+  }
+  .msg-row .del{
+    background:none;
+    border:none;
+    color: var(--danger);
+    cursor:pointer;
+    font-size:13px;
+    padding:2px 4px;
+    flex-shrink:0;
+  }
+  .empty-hint{
+    font-size:12.5px;
+    color: var(--ink-dim);
+    text-align:center;
+    padding: 18px 8px;
+    border: 1px dashed var(--line);
+    border-radius:8px;
+  }
+
+  .download-bar{
+    margin-top:18px;
+  }
+  .btn-download{
+    width:100%;
+    background: var(--ink);
+    color: #14161c;
+    padding: 12px;
+    font-size:14px;
+    border-radius:9px;
+  }
+  .btn-download:hover{ background:#fff; }
+
+  /* --- preview / phone frame --- */
+  .preview-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .phone-frame{
+    width: 340px;
+    background: #000;
+    border-radius: 46px;
+    padding: 14px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 0 1px #050505;
+  }
+  .phone-screen{
+    background: #ffffff;
+    border-radius: 34px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height: 640px;
+  }
+  .phone-screen.theme-imessage{ background:#000; }
+  .phone-screen.theme-android{ background:#f2f2f4; }
+
+  .status-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 8px 22px 2px;
+    font-size:13px;
+    font-weight:600;
+    color:#fff;
+  }
+  .theme-android .status-bar{ color:#000; }
+
+  .chat-header{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 4px 10px 10px;
+    color:#fff;
+    border-bottom: 0.5px solid rgba(255,255,255,0.12);
+  }
+  .theme-android .chat-header{
+    color:#000;
+    border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    flex-direction:row;
+    align-items:center;
+    gap:10px;
+    padding: 6px 14px 12px;
+  }
+  .avatar{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background: linear-gradient(135deg,#8e8e93,#57575b);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:3px;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .theme-android .avatar{ margin-bottom:0; background: linear-gradient(135deg,#1e8e5a,#146443); }
+  .chat-name{
+    font-size:12.5px;
+    font-weight:600;
+    opacity:0.92;
+  }
+  .theme-android .chat-name{ font-size:15px; }
+
+  .messages{
+    flex:1;
+    overflow-y:auto;
+    padding: 12px 12px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .bubble-row{
+    display:flex;
+    max-width:100%;
+  }
+  .bubble-row.me{ justify-content:flex-end; }
+  .bubble-row.them{ justify-content:flex-start; }
+  .bubble{
+    max-width: 74%;
+    padding: 8px 13px;
+    font-size: 14.5px;
+    line-height:1.32;
+    word-break: break-word;
+    margin: 2px 0;
+  }
+  /* iMessage bubble shapes */
+  .theme-imessage .bubble.me{
+    background: var(--imessage-blue);
+    color:#fff;
+    border-radius: 18px;
+    border-bottom-right-radius: 4px;
+  }
+  .theme-imessage .bubble.them{
+    background: var(--imessage-gray);
+    color:#fff;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+  }
+  /* Android bubble shapes */
+  .theme-android .bubble.me{
+    background: var(--android-green);
+    color:#fff;
+    border-radius: 16px;
+    border-bottom-right-radius: 3px;
+  }
+  .theme-android .bubble.them{
+    background: #fff;
+    color:#1a1a1a;
+    border-radius: 16px;
+    border-bottom-left-radius: 3px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+  }
+
+  .bubble.image{
+    padding: 0;
+    background: none !important;
+    box-shadow: none !important;
+    border-radius: 16px;
+    overflow: hidden;
+    line-height: 0;
+  }
+  .bubble.image img{
+    display:block;
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 16px;
+  }
+  .bubble.location{
+    padding: 0;
+    background: #fff !important;
+    color: #1a1a1a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25) !important;
+    border-radius: 16px;
+    overflow: hidden;
+    width: 210px;
+    max-width: 210px;
+  }
+  .loc-map{
+    display:block;
+    width:100%;
+    height:110px;
+  }
+  .loc-info{
+    padding: 8px 12px 10px;
+  }
+  .loc-label{
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .loc-address{
+    font-size: 11px;
+    color: #8a8a8e;
+    line-height: 1.3;
+  }
+  .timestamp-divider{
+    text-align:center;
+    font-size:11px;
+    color: rgba(255,255,255,0.4);
+    margin: 10px 0 4px;
+  }
+  .theme-android .timestamp-divider{ color: rgba(0,0,0,0.35); }
+
+  .input-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding: 8px 12px 14px;
+  }
+  .input-bar .pill{
+    flex:1;
+    height:32px;
+    border-radius:16px;
+    background: rgba(255,255,255,0.12);
+    display:flex;
+    align-items:center;
+    padding-left:12px;
+    font-size:13px;
+    color: rgba(255,255,255,0.4);
+  }
+  .theme-android .input-bar .pill{
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #999;
+  }
+
+  .hint{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color: var(--ink-dim);
+    text-align:center;
+    max-width:340px;
+  }
+
+  /* --- polaroid tab --- */
+  .polaroid-stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height: 560px;
+    padding: 60px 50px;
+  }
+  .polaroid-frame{
+    background:#fbfbf9;
+    padding: 18px 18px 70px;
+    box-shadow: none;
+    width: 320px;
+    position: relative;
+    transition: box-shadow 0.15s ease;
+  }
+  .polaroid-frame.has-shadow{
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.22),
+      0 14px 24px rgba(0,0,0,0.30),
+      0 32px 55px rgba(0,0,0,0.32);
+  }
+  .polaroid-photo-wrap{
+    width: 100%;
+    height: 320px;
+    background: #d8dade repeating-linear-gradient(45deg, #cfd1d6, #cfd1d6 10px, #d8dade 10px, #d8dade 20px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .polaroid-photo-wrap img{
+    width:100%;
+    height:100%;
+    object-fit: cover;
+    display:block;
+  }
+  .polaroid-placeholder{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color: #9a9a94;
+    text-align:center;
+    padding: 0 20px;
+  }
+  .polaroid-caption{
+    font-family: 'Caveat', cursive;
+    font-size: 26px;
+    color: #2c2c2c;
+    text-align:center;
+    margin-top: 16px;
+    padding: 0 6px;
+    min-height: 30px;
+    word-break: break-word;
+  }
+
+  .polaroid-controls .field{ margin-bottom: 16px; }
+  .upload-drop{
+    border: 1.5px dashed var(--line);
+    border-radius: 10px;
+    padding: 20px 12px;
+    text-align:center;
+    cursor:pointer;
+    color: var(--ink-dim);
+    font-size: 13px;
+    display:block;
+  }
+  .upload-drop:hover{ border-color: var(--accent-dim); color: var(--ink); }
+  input[type=range]{
+    width:100%;
+    accent-color: var(--accent);
+  }
+  .range-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:11.5px;
+    color: var(--ink-dim);
+    margin-bottom:4px;
+  }
+  select.styled-select{
+    width:100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    padding: 9px 11px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color: var(--ink);
+    cursor:pointer;
+  }
+  .checkbox-row input{
+    width:15px;
+    height:15px;
+    accent-color: var(--accent);
+    cursor:pointer;
+  }
+
+  /* --- social post tab --- */
+  .social-stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height: 560px;
+    padding: 40px;
+  }
+  .social-card{
+    width: 360px;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    color: #14171a;
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+  }
+  .social-card .sc-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 14px 14px 8px;
+  }
+  .social-card .sc-avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background: linear-gradient(135deg,#8e8e93,#57575b);
+    flex-shrink:0;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:700;
+    font-size:15px;
+  }
+  .social-card .sc-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .social-card .sc-names{ flex:1; min-width:0; }
+  .social-card .sc-name{ font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:4px; }
+  .social-card .sc-handle{ font-size:13px; color:#697580; }
+  .social-card .sc-body{ padding: 0 14px 10px; font-size:15px; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
+  .social-card .sc-image{ width:100%; display:block; max-height:340px; object-fit:cover; }
+  .social-card .sc-stats{
+    display:flex;
+    gap:20px;
+    padding: 10px 14px 14px;
+    font-size:13px;
+    color:#697580;
+    border-top: 1px solid #eef1f3;
+    margin-top: 6px;
+  }
+  .social-card.theme-ig .sc-header{ border-bottom:1px solid #efefef; padding-bottom:10px; }
+  .social-card.theme-ig .sc-name{ font-size:14px; }
+  .social-card.theme-ig .sc-handle{ display:none; }
+  .social-card.theme-ig .sc-actions{
+    display:flex;
+    gap:14px;
+    padding: 10px 14px 2px;
+    font-size:20px;
+  }
+  .social-card.theme-ig .sc-likes{ padding: 4px 14px 0; font-weight:700; font-size:13.5px; }
+  .social-card.theme-ig .sc-caption{ padding: 4px 14px 4px; font-size:13.5px; line-height:1.4; }
+  .social-card.theme-ig .sc-caption b{ margin-right:5px; }
+  .social-card.theme-ig .sc-time{ padding: 2px 14px 14px; font-size:11px; color:#8a8a8e; text-transform:uppercase; letter-spacing:0.03em; }
+  .social-card.theme-ig .sc-stats, .social-card.theme-ig .sc-body{ display:none; }
+  .social-card.theme-x .sc-actions, .social-card.theme-x .sc-likes, .social-card.theme-x .sc-caption, .social-card.theme-x .sc-time{ display:none; }
+
+  /* --- incoming call tab --- */
+  .call-screen{
+    background: #16171b;
+    background-size: cover;
+    background-position: center;
+    display:flex;
+    flex-direction:column;
+    height: 640px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+  }
+  .call-screen::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background: rgba(0,0,0,0.32);
+  }
+  .call-screen > *{ position:relative; z-index:1; }
+  .call-time{
+    text-align:center;
+    font-size:14px;
+    font-weight:600;
+    padding-top:10px;
+  }
+  .call-meta{
+    text-align:center;
+    margin-top: 60px;
+  }
+  .call-label{
+    font-size:13px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 10px;
+    letter-spacing:0.02em;
+  }
+  .call-avatar{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg,#6b6f76,#3a3c40);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+    font-weight:700;
+    overflow:hidden;
+  }
+  .call-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .call-name{ font-size:26px; font-weight:600; margin-bottom:6px; }
+  .call-subtitle{ font-size:14px; color: rgba(255,255,255,0.6); }
+  .call-buttons{
+    margin-top:auto;
+    display:flex;
+    justify-content:space-around;
+    padding: 0 40px 46px;
+  }
+  .call-btn-col{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .call-btn{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+  }
+  .call-btn.decline{ background:#ff3b30; transform:rotate(135deg); }
+  .call-btn.accept{ background:#34c759; }
+  .call-btn-label{ font-size:12px; color: rgba(255,255,255,0.7); }
+
+  .outcall-buttons{
+    margin-top:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 26px;
+    padding-bottom: 40px;
+  }
+  .outcall-icon-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px 30px;
+    padding: 0 30px;
+  }
+  .outcall-icon-col{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .outcall-icon{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    background: rgba(255,255,255,0.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+  }
+  .outcall-icon-label{ font-size:11px; color: rgba(255,255,255,0.75); }
+  .outcall-end{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:#ff3b30;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    transform:rotate(135deg);
+  }
+
+  /* --- group chat tab --- */
+  .participant-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background: var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:5px 10px 5px 6px;
+    font-size:12px;
+    margin: 0 6px 6px 0;
+  }
+  .participant-chip .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .participant-chip button{
+    background:none; border:none; color: var(--ink-dim); cursor:pointer; font-size:12px; padding:0 0 0 3px;
+  }
+  .bubble-sender-label{
+    font-size: 11px;
+    font-weight:600;
+    margin: 6px 0 2px 4px;
+  }
+
+  /* --- journal tab --- */
+  .journal-stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:560px;
+    padding: 30px;
+  }
+  .journal-page{
+    width: 380px;
+    min-height: 480px;
+    padding: 40px 36px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    font-size: 19px;
+    line-height: 2;
+    outline: none;
+    overflow-wrap: break-word;
+  }
+  .journal-page.paper-lined{
+    background-color: #fbf9f2;
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 37px, #cdd6e0 38px);
+    background-position: 0 46px;
+  }
+  .journal-page.paper-grid{
+    background-color: #fbf9f2;
+    background-image:
+      repeating-linear-gradient(to bottom, transparent, transparent 27px, #dfe4ea 28px),
+      repeating-linear-gradient(to right, transparent, transparent 27px, #dfe4ea 28px);
+  }
+  .journal-page.paper-blank{ background-color: #fbf9f2; }
+  .journal-page.font-hand{ font-family: 'Caveat', cursive; font-size: 24px; }
+  .journal-page.font-type{ font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:15px; line-height:1.9; }
+  .journal-page.font-print{ font-family: 'Inter', sans-serif; font-size: 15px; line-height:1.8; }
+
+  /* --- lock screen tab --- */
+  .lock-screen{
+    height: 640px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 46px 14px 20px;
+    color:#fff;
+  }
+  .lock-screen::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background: rgba(0,0,0,0.16);
+  }
+  .lock-screen > *{ position:relative; z-index:1; }
+  .lock-bg-sunset{ background-image: linear-gradient(160deg, #ff9966, #ff5e62 45%, #7b2ff7 100%); }
+  .lock-bg-ocean{ background-image: linear-gradient(160deg, #2b5876, #4e4376); }
+  .lock-bg-midnight{ background-image: linear-gradient(160deg, #0f2027, #203a43, #2c5364); }
+  .lock-bg-mono{ background-image: linear-gradient(160deg, #3a3a3a, #101010); }
+
+  .lock-icon-lock{
+    font-size: 20px;
+    opacity: 0.9;
+    margin-bottom: 6px;
+  }
+  .lock-time{
+    font-size: 62px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .lock-date{
+    font-size: 15px;
+    margin-top: 6px;
+    opacity: 0.92;
+    font-weight: 500;
+  }
+  .lock-notifications{
+    width: 100%;
+    margin-top: 22px;
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+  }
+  .lock-notif{
+    background: rgba(255,255,255,0.24);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display:flex;
+    gap: 10px;
+    align-items:flex-start;
+    text-align:left;
+  }
+  .lock-notif-icon{
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #34c759;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 16px;
+    flex-shrink: 0;
+    overflow:hidden;
+  }
+  .lock-notif-body{ flex:1; min-width:0; }
+  .lock-notif-top{
+    display:flex;
+    justify-content:space-between;
+    font-size: 11.5px;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .lock-notif-sender{
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  .lock-notif-text{
+    font-size: 13.5px;
+    margin-top: 1px;
+    line-height: 1.3;
+    white-space: pre-wrap;
+    word-break: break-word;
+    opacity: 0.95;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-mark">RCPT</span>
+    <span class="brand-name">Receipts</span>
+  </div>
+  <span class="brand-sub">fake proof for your fic → export .png</span>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active" id="tabbtn-thread" onclick="switchTab('thread')">Text Thread</button>
+  <button class="tab-btn" id="tabbtn-polaroid" onclick="switchTab('polaroid')">Polaroid</button>
+  <button class="tab-btn" id="tabbtn-social" onclick="switchTab('social')">Social Post</button>
+  <button class="tab-btn" id="tabbtn-call" onclick="switchTab('call')">Incoming Call</button>
+  <button class="tab-btn" id="tabbtn-outcall" onclick="switchTab('outcall')">Outgoing Call</button>
+  <button class="tab-btn" id="tabbtn-lock" onclick="switchTab('lock')">Lock Screen</button>
+  <button class="tab-btn" id="tabbtn-group" onclick="switchTab('group')">Group Chat</button>
+  <button class="tab-btn" id="tabbtn-journal" onclick="switchTab('journal')">Note / Journal</button>
+</div>
+<div class="tabbar-line"></div>
+
+<div class="layout" id="tab-thread">
+
+  <!-- CONTROL PANEL -->
+  <div class="panel">
+    <p class="section-label">Conversation</p>
+    <div class="row2">
+      <div class="field">
+        <label for="contactName">Contact name</label>
+        <input type="text" id="contactName" value="Peter" oninput="render()">
+      </div>
+      <div class="field">
+        <label for="carrierTime">Status bar time</label>
+        <input type="text" id="carrierTime" value="9:41" oninput="render()">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="contactPhoto">Contact photo</label>
+      <div class="photo-row">
+        <input type="file" id="contactPhoto" accept="image/*" onchange="handlePhotoUpload(event)">
+        <button class="btn btn-ghost" id="btn-remove-photo" onclick="removePhoto()" style="display:none;">Remove</button>
+      </div>
+    </div>
+
+    <p class="section-label">Style</p>
+    <div class="field">
+      <div class="style-toggle">
+        <button id="btn-imessage" class="active" onclick="setTheme('imessage')">iMessage</button>
+        <button id="btn-android" onclick="setTheme('android')">Android</button>
+      </div>
+    </div>
+
+    <p class="section-label">Add message</p>
+    <div class="composer">
+      <div class="sender-toggle">
+        <button id="btn-me" class="active-me" onclick="setSender('me')">Me (right)</button>
+        <button id="btn-them" onclick="setSender('them')">Them (left)</button>
+      </div>
+      <div class="type-toggle">
+        <button id="type-text" class="active" onclick="setMsgType('text')">Text</button>
+        <button id="type-image" onclick="setMsgType('image')">Image</button>
+        <button id="type-location" onclick="setMsgType('location')">Location</button>
+      </div>
+      <textarea id="msgText" placeholder="Type the line..."></textarea>
+      <div id="imageFieldRow" style="display:none;">
+        <label class="btn btn-outline" for="msgImage" style="display:block; text-align:center;">Choose image file</label>
+        <input type="file" id="msgImage" accept="image/*" style="display:none;" onchange="addImageMessage(event)">
+      </div>
+      <div id="locFieldRow" class="loc-fields" style="display:none;">
+        <input type="text" id="locLabel" placeholder="Label (e.g. Stark Tower)">
+        <input type="text" id="locAddress" placeholder="Address (e.g. 200 Park Ave, New York, NY)">
+      </div>
+      <div class="composer-footer">
+        <button class="btn btn-accent" id="addBubbleBtn" onclick="addMessage()">Add bubble</button>
+      </div>
+    </div>
+
+    <p class="section-label">Thread (<span id="msgCount">0</span>)</p>
+    <div class="msg-list" id="msgList">
+      <div class="empty-hint">No messages yet — add your first line above</div>
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadPng()">Download PNG</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen theme-imessage" id="phoneScreen">
+        <div class="status-bar">
+          <span id="statusTime">9:41</span>
+          <span>●●●●</span>
+        </div>
+        <div class="chat-header">
+          <div class="avatar" id="avatarInitial">P</div>
+          <div class="chat-name" id="headerName">Peter</div>
+        </div>
+        <div class="messages" id="messagesArea">
+        </div>
+        <div class="input-bar">
+          <div class="pill">Text Message</div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">This renders exactly what gets exported — add messages on the left to build the thread.</p>
+  </div>
+
+</div>
+
+<div class="layout" id="tab-polaroid" style="display:none;">
+
+  <!-- CONTROL PANEL -->
+  <div class="panel polaroid-controls">
+    <p class="section-label">Photo</p>
+    <div class="field">
+      <label class="upload-drop" for="polaroidUpload">Click to upload a photo</label>
+      <input type="file" id="polaroidUpload" accept="image/*" style="display:none;" onchange="handlePolaroidUpload(event)">
+    </div>
+
+    <p class="section-label">Caption</p>
+    <div class="field">
+      <input type="text" id="polaroidCaption" placeholder="e.g. summer '09" oninput="renderPolaroid()">
+    </div>
+
+    <p class="section-label">Tone</p>
+    <div class="field">
+      <select class="styled-select" id="polaroidFilter" onchange="renderPolaroid()">
+        <option value="none">Original</option>
+        <option value="warm">Warm / vintage</option>
+        <option value="fade">Faded</option>
+        <option value="bw">Black & white</option>
+      </select>
+    </div>
+
+    <p class="section-label">Tilt</p>
+    <div class="field">
+      <div class="range-row"><span>−8°</span><span>8°</span></div>
+      <input type="range" id="polaroidRotation" min="-8" max="8" value="-2" oninput="renderPolaroid()">
+    </div>
+
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="polaroidShadow" checked onchange="renderPolaroid()">
+        Soft shadow behind photo
+      </label>
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadPolaroid()">Download PNG</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap">
+    <div class="polaroid-stage" id="polaroidStage">
+      <div class="polaroid-frame has-shadow" id="polaroidFrame" style="transform: rotate(-2deg);">
+        <div class="polaroid-photo-wrap" id="polaroidPhotoWrap">
+          <div class="polaroid-placeholder">upload a photo to see it here</div>
+        </div>
+        <div class="polaroid-caption" id="polaroidCaptionText"></div>
+      </div>
+    </div>
+    <p class="hint">Upload a photo, add a caption, adjust the tilt — then download.</p>
+  </div>
+
+</div>
+
+<!-- SOCIAL POST TAB -->
+<div class="layout" id="tab-social" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Platform</p>
+    <div class="field">
+      <div class="style-toggle">
+        <button id="btn-platform-x" class="active" onclick="setSocialPlatform('x')">X / Twitter</button>
+        <button id="btn-platform-ig" onclick="setSocialPlatform('ig')">Instagram</button>
+      </div>
+    </div>
+
+    <p class="section-label">Account</p>
+    <div class="row2">
+      <div class="field">
+        <label>Display name</label>
+        <input type="text" id="socialName" value="Peter Parker" oninput="renderSocial()">
+      </div>
+      <div class="field">
+        <label>Handle</label>
+        <input type="text" id="socialHandle" value="spidermanparker" oninput="renderSocial()">
+      </div>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="socialAvatarUpload">Upload avatar (optional)</label>
+      <input type="file" id="socialAvatarUpload" accept="image/*" style="display:none;" onchange="handleSocialAvatarUpload(event)">
+    </div>
+
+    <p class="section-label">Post</p>
+    <div class="field">
+      <label id="socialBodyLabel">Post text</label>
+      <textarea id="socialBody" rows="4" oninput="renderSocial()">this city never sleeps and neither do i apparently</textarea>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="socialImageUpload">Attach photo (optional)</label>
+      <input type="file" id="socialImageUpload" accept="image/*" style="display:none;" onchange="handleSocialImageUpload(event)">
+    </div>
+
+    <p class="section-label">Stats & time</p>
+    <div class="row2">
+      <div class="field">
+        <label id="socialStat1Label">Likes</label>
+        <input type="text" id="socialStat1" value="2.4K" oninput="renderSocial()">
+      </div>
+      <div class="field">
+        <label id="socialStat2Label">Replies</label>
+        <input type="text" id="socialStat2" value="318" oninput="renderSocial()">
+      </div>
+    </div>
+    <div class="field">
+      <label>Timestamp</label>
+      <input type="text" id="socialTime" value="11:47 PM · Aug 6, 2026" oninput="renderSocial()">
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadSocial()">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="social-stage" id="socialStage">
+      <div class="social-card theme-x" id="socialCard">
+        <div class="sc-header">
+          <div class="sc-avatar" id="socialAvatar">P</div>
+          <div class="sc-names">
+            <div class="sc-name" id="socialNameOut">Peter Parker</div>
+            <div class="sc-handle" id="socialHandleOut">@spidermanparker</div>
+          </div>
+        </div>
+        <div class="sc-body" id="socialBodyOut"></div>
+        <img class="sc-image" id="socialImageOut" style="display:none;">
+        <div class="sc-stats" id="socialStatsOut"></div>
+
+        <div class="sc-actions">🤍 💬 📤 🔖</div>
+        <div class="sc-likes" id="socialLikesOut"></div>
+        <div class="sc-caption" id="socialCaptionOut"></div>
+        <div class="sc-time" id="socialTimeOut"></div>
+      </div>
+    </div>
+    <p class="hint">Switch platform, fill in the post — the card updates live.</p>
+  </div>
+</div>
+
+<!-- INCOMING CALL TAB -->
+<div class="layout" id="tab-call" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Caller</p>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="callName" value="Tony Stark" oninput="renderCall()">
+    </div>
+    <div class="field">
+      <label>Subtitle</label>
+      <select class="styled-select" id="callSubtitle" onchange="renderCall()">
+        <option value="mobile">mobile</option>
+        <option value="iPhone">iPhone</option>
+        <option value="FaceTime Video">FaceTime Video</option>
+        <option value="FaceTime Audio">FaceTime Audio</option>
+        <option value="Unknown Caller">Unknown Caller</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="callPhotoUpload">Upload caller photo (optional)</label>
+      <input type="file" id="callPhotoUpload" accept="image/*" style="display:none;" onchange="handleCallPhotoUpload(event)">
+    </div>
+    <div class="field">
+      <label>Status bar time</label>
+      <input type="text" id="callTime" value="9:41" oninput="renderCall()">
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadCall()">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="call-screen" id="callScreen">
+        <div class="call-time" id="callTimeOut">9:41</div>
+        <div class="call-meta">
+          <div class="call-label" id="callLabelOut">incoming call</div>
+          <div class="call-avatar" id="callAvatarOut">T</div>
+          <div class="call-name" id="callNameOut">Tony Stark</div>
+          <div class="call-subtitle" id="callSubtitleOut">mobile</div>
+        </div>
+        <div class="call-buttons">
+          <div class="call-btn-col">
+            <div class="call-btn decline">📞</div>
+            <div class="call-btn-label">Decline</div>
+          </div>
+          <div class="call-btn-col">
+            <div class="call-btn accept">📞</div>
+            <div class="call-btn-label">Accept</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Add a photo for a full-bleed background, or leave it off for a plain dark screen.</p>
+  </div>
+</div>
+
+<!-- OUTGOING CALL TAB -->
+<div class="layout" id="tab-outcall" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Caller</p>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="outcallName" value="Tony Stark" oninput="renderOutcall()">
+    </div>
+    <div class="field">
+      <label>Call type</label>
+      <select class="styled-select" id="outcallSubtitle" onchange="renderOutcall()">
+        <option value="calling...">calling...</option>
+        <option value="FaceTime Video">FaceTime Video</option>
+        <option value="FaceTime Audio">FaceTime Audio</option>
+        <option value="ringing...">ringing...</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="outcallPhotoUpload">Upload caller photo (optional)</label>
+      <input type="file" id="outcallPhotoUpload" accept="image/*" style="display:none;" onchange="handleOutcallPhotoUpload(event)">
+    </div>
+    <div class="field">
+      <label>Status bar time</label>
+      <input type="text" id="outcallTime" value="9:41" oninput="renderOutcall()">
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadOutcall()">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="call-screen" id="outcallScreen">
+        <div class="call-time" id="outcallTimeOut">9:41</div>
+        <div class="call-meta">
+          <div class="call-avatar" id="outcallAvatarOut">T</div>
+          <div class="call-name" id="outcallNameOut">Tony Stark</div>
+          <div class="call-subtitle" id="outcallSubtitleOut">calling...</div>
+        </div>
+        <div class="outcall-buttons">
+          <div class="outcall-icon-grid">
+            <div class="outcall-icon-col"><div class="outcall-icon">🔇</div><div class="outcall-icon-label">mute</div></div>
+            <div class="outcall-icon-col"><div class="outcall-icon">⌨️</div><div class="outcall-icon-label">keypad</div></div>
+            <div class="outcall-icon-col"><div class="outcall-icon">🔊</div><div class="outcall-icon-label">speaker</div></div>
+            <div class="outcall-icon-col"><div class="outcall-icon">➕</div><div class="outcall-icon-label">add call</div></div>
+            <div class="outcall-icon-col"><div class="outcall-icon">📹</div><div class="outcall-icon-label">FaceTime</div></div>
+            <div class="outcall-icon-col"><div class="outcall-icon">👤</div><div class="outcall-icon-label">contacts</div></div>
+          </div>
+          <div class="outcall-end">📞</div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Mimics the "calling..." screen with the standard iOS call toolbar.</p>
+  </div>
+</div>
+
+<!-- GROUP CHAT TAB -->
+<div class="layout" id="tab-group" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Group</p>
+    <div class="field">
+      <label>Group name</label>
+      <input type="text" id="groupName" value="avengers (minus thor)" oninput="renderGroup()">
+    </div>
+
+    <p class="section-label">Participants</p>
+    <div class="field">
+      <input type="text" id="newParticipantName" placeholder="Add a name and press Enter" onkeydown="if(event.key==='Enter'){addParticipant(); event.preventDefault();}">
+    </div>
+    <div class="field" id="participantList"></div>
+
+    <p class="section-label">Add message</p>
+    <div class="composer">
+      <div class="field" style="margin-bottom:10px;">
+        <label>From</label>
+        <select class="styled-select" id="groupSender" onchange="renderGroup()"></select>
+      </div>
+      <textarea id="groupMsgText" placeholder="Type the line..."></textarea>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addGroupMessage()">Add bubble</button>
+      </div>
+    </div>
+
+    <p class="section-label">Thread (<span id="groupMsgCount">0</span>)</p>
+    <div class="msg-list" id="groupMsgList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadGroup()">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen theme-imessage" id="groupPhoneScreen">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>●●●●</span>
+        </div>
+        <div class="chat-header">
+          <div class="avatar">👥</div>
+          <div class="chat-name" id="groupNameOut">avengers (minus thor)</div>
+        </div>
+        <div class="messages" id="groupMessagesArea"></div>
+        <div class="input-bar"><div class="pill">Text Message</div></div>
+      </div>
+    </div>
+    <p class="hint">Add participants first, then pick who's speaking for each line.</p>
+  </div>
+</div>
+
+<!-- NOTE / JOURNAL TAB -->
+<div class="layout" id="tab-journal" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Paper</p>
+    <div class="field">
+      <select class="styled-select" id="journalPaper" onchange="applyJournalStyle()">
+        <option value="lined">Lined</option>
+        <option value="grid">Grid</option>
+        <option value="blank">Blank</option>
+      </select>
+    </div>
+
+    <p class="section-label">Handwriting style</p>
+    <div class="field">
+      <select class="styled-select" id="journalFont" onchange="applyJournalStyle()">
+        <option value="hand">Handwritten</option>
+        <option value="type">Typewriter</option>
+        <option value="print">Clean print</option>
+      </select>
+    </div>
+
+    <p class="section-label">Ink color</p>
+    <div class="field">
+      <select class="styled-select" id="journalInk" onchange="applyJournalStyle()">
+        <option value="#2c2c2c">Black</option>
+        <option value="#1f3a8a">Blue</option>
+        <option value="#8a1f1f">Red</option>
+      </select>
+    </div>
+    <p class="hint" style="margin:0;">Type directly onto the page on the right — it exports exactly as shown.</p>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadJournal()">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="journal-stage" id="journalStage">
+      <div class="journal-page paper-lined font-hand" id="journalPage" contenteditable="true" style="color:#2c2c2c;">Dear diary,
+
+today was... a lot.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOCK SCREEN TAB -->
+<div class="layout" id="tab-lock" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Wallpaper</p>
+    <div class="field">
+      <select class="styled-select" id="lockPreset" onchange="renderLock()">
+        <option value="sunset">Sunset</option>
+        <option value="ocean">Ocean</option>
+        <option value="midnight">Midnight</option>
+        <option value="mono">Mono dark</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="lockPhotoUpload">Upload photo instead (optional)</label>
+      <input type="file" id="lockPhotoUpload" accept="image/*" style="display:none;" onchange="handleLockPhotoUpload(event)">
+      <button class="btn btn-outline" id="btn-remove-lockphoto" onclick="removeLockPhoto()" style="display:none; margin-top:8px; width:100%;">Remove photo</button>
+    </div>
+
+    <p class="section-label">Time & date</p>
+    <div class="field">
+      <label>Time</label>
+      <input type="text" id="lockTime" value="9:41" oninput="renderLock()">
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="text" id="lockDate" value="Saturday, August 8" oninput="renderLock()">
+    </div>
+
+    <p class="section-label">Add notification</p>
+    <div class="composer">
+      <div class="row2">
+        <div class="field" style="margin-bottom:8px;">
+          <label>App</label>
+          <input type="text" id="lockNotifApp" value="Messages">
+        </div>
+        <div class="field" style="margin-bottom:8px;">
+          <label>Time label</label>
+          <input type="text" id="lockNotifTime" value="now">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label>Sender</label>
+        <input type="text" id="lockNotifSender" value="Peter">
+      </div>
+      <textarea id="lockNotifText" placeholder="Message preview text..." rows="2">wait are you awake</textarea>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addLockNotification()">Add notification</button>
+      </div>
+    </div>
+
+    <p class="section-label">Notifications (<span id="lockNotifCount">0</span>)</p>
+    <div class="msg-list" id="lockNotifList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadLock()">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="lock-screen lock-bg-sunset" id="lockScreen">
+        <div class="lock-icon-lock">🔒</div>
+        <div class="lock-time" id="lockTimeOut">9:41</div>
+        <div class="lock-date" id="lockDateOut">Saturday, August 8</div>
+        <div class="lock-notifications" id="lockNotifArea"></div>
+      </div>
+    </div>
+    <p class="hint">Pick a wallpaper or upload your own, set the time, then stack notifications.</p>
+  </div>
+</div>
+
+<script>
+let messages = [];
+let currentSender = 'me';
+let currentTheme = 'imessage';
+let currentMsgType = 'text';
+let contactPhoto = null;
+
+function setMsgType(t){
+  currentMsgType = t;
+  document.getElementById('type-text').classList.toggle('active', t==='text');
+  document.getElementById('type-image').classList.toggle('active', t==='image');
+  document.getElementById('type-location').classList.toggle('active', t==='location');
+  document.getElementById('msgText').style.display = (t==='text') ? 'block' : 'none';
+  document.getElementById('imageFieldRow').style.display = (t==='image') ? 'block' : 'none';
+  document.getElementById('locFieldRow').style.display = (t==='location') ? 'block' : 'none';
+  document.getElementById('addBubbleBtn').style.display = (t==='image') ? 'none' : 'inline-block';
+}
+
+function handlePhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    contactPhoto = e.target.result;
+    document.getElementById('btn-remove-photo').style.display = 'inline-block';
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(){
+  contactPhoto = null;
+  document.getElementById('contactPhoto').value = '';
+  document.getElementById('btn-remove-photo').style.display = 'none';
+  render();
+}
+
+function setSender(s){
+  currentSender = s;
+  document.getElementById('btn-me').classList.toggle('active-me', s==='me');
+  document.getElementById('btn-them').classList.toggle('active-them', s==='them');
+}
+
+function setTheme(t){
+  currentTheme = t;
+  document.getElementById('btn-imessage').classList.toggle('active', t==='imessage');
+  document.getElementById('btn-android').classList.toggle('active', t==='android');
+  const screen = document.getElementById('phoneScreen');
+  screen.classList.remove('theme-imessage','theme-android');
+  screen.classList.add('theme-' + t);
+  render();
+}
+
+function addMessage(){
+  if(currentMsgType === 'location'){
+    const label = document.getElementById('locLabel').value.trim();
+    const address = document.getElementById('locAddress').value.trim();
+    if(!address) return;
+    messages.push({ sender: currentSender, type: 'location', label: label || 'Shared Location', address: address });
+    document.getElementById('locLabel').value = '';
+    document.getElementById('locAddress').value = '';
+    render();
+    return;
+  }
+  const ta = document.getElementById('msgText');
+  const text = ta.value.trim();
+  if(!text) return;
+  messages.push({ sender: currentSender, type: 'text', text: text });
+  ta.value = '';
+  render();
+}
+
+function hashStr(s){
+  let h = 0;
+  for(let i=0; i<s.length; i++){
+    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function generateMapSvg(seedStr){
+  const h = hashStr(seedStr || 'map');
+  const angle = (h % 30) - 15;
+  const parkX = 20 + (h % 90);
+  const parkY = 15 + ((h >> 3) % 60);
+  const streetOffset = (h >> 5) % 20;
+
+  let streets = '';
+  for(let i=-1; i<6; i++){
+    const y = i * 22 + streetOffset;
+    streets += `<line x1="-20" y1="${y}" x2="240" y2="${y + angle}" stroke="#ffffff" stroke-width="5" />`;
+  }
+  for(let i=-1; i<8; i++){
+    const x = i * 30 + (streetOffset % 15);
+    streets += `<line x1="${x}" y1="-20" x2="${x + angle}" y2="140" stroke="#ffffff" stroke-width="5" />`;
+  }
+
+  return `
+  <svg class="loc-map" viewBox="0 0 210 110" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="210" height="110" fill="#e8ecef"/>
+    <g clip-path="url(#clip)">
+      ${streets}
+      <rect x="${parkX}" y="${parkY}" width="34" height="26" fill="#d3e8d0" rx="3"/>
+    </g>
+    <clipPath id="clip"><rect width="210" height="110"/></clipPath>
+    <g transform="translate(105,52)">
+      <ellipse cx="0" cy="20" rx="7" ry="2.5" fill="rgba(0,0,0,0.18)"/>
+      <path d="M0 -20 C 9 -20 16 -13 16 -4 C 16 8 0 22 0 22 C 0 22 -16 8 -16 -4 C -16 -13 -9 -20 0 -20 Z" fill="#e0654f"/>
+      <circle cx="0" cy="-4" r="6" fill="#ffffff"/>
+    </g>
+  </svg>`;
+}
+
+function addImageMessage(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    messages.push({ sender: currentSender, type: 'image', src: e.target.result });
+    render();
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function deleteMessage(idx){
+  messages.splice(idx, 1);
+  render();
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function render(){
+  // header
+  const name = document.getElementById('contactName').value || 'Contact';
+  document.getElementById('headerName').textContent = name;
+  const avatarEl = document.getElementById('avatarInitial');
+  if(contactPhoto){
+    avatarEl.innerHTML = `<img src="${contactPhoto}" alt="">`;
+  } else {
+    avatarEl.textContent = name.trim().charAt(0).toUpperCase() || '?';
+  }
+  document.getElementById('statusTime').textContent = document.getElementById('carrierTime').value || '9:41';
+
+  // message bubbles
+  const area = document.getElementById('messagesArea');
+  area.innerHTML = '';
+  messages.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'bubble-row ' + m.sender;
+    const bubble = document.createElement('div');
+    if(m.type === 'image'){
+      bubble.className = 'bubble image ' + m.sender;
+      const img = document.createElement('img');
+      img.src = m.src;
+      bubble.appendChild(img);
+    } else if(m.type === 'location'){
+      bubble.className = 'bubble location ' + m.sender;
+      bubble.innerHTML = `
+        ${generateMapSvg(m.address)}
+        <div class="loc-info">
+          <div class="loc-label">${escapeHtml(m.label)}</div>
+          <div class="loc-address">${escapeHtml(m.address)}</div>
+        </div>
+      `;
+    } else {
+      bubble.className = 'bubble ' + m.sender;
+      bubble.textContent = m.text;
+    }
+    row.appendChild(bubble);
+    area.appendChild(row);
+  });
+
+  // side list
+  const list = document.getElementById('msgList');
+  document.getElementById('msgCount').textContent = messages.length;
+  if(messages.length === 0){
+    list.innerHTML = '<div class="empty-hint">No messages yet — add your first line above</div>';
+    return;
+  }
+  list.innerHTML = '';
+  messages.forEach((m, idx) => {
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    let contentHtml;
+    if(m.type === 'image'){
+      contentHtml = `<img src="${m.src}" class="thumb" alt="">`;
+    } else if(m.type === 'location'){
+      contentHtml = `<span class="loc-pin">📍</span><span class="txt">${escapeHtml(m.label)} — ${escapeHtml(m.address)}</span>`;
+    } else {
+      contentHtml = `<span class="txt">${escapeHtml(m.text)}</span>`;
+    }
+    row.innerHTML = `
+      <span class="tag ${m.sender}">${m.sender === 'me' ? 'ME' : 'THEM'}</span>
+      ${contentHtml}
+      <button class="del" onclick="deleteMessage(${idx})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function downloadPng(){
+  const frame = document.querySelector('#tab-thread .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    const contactName = (document.getElementById('contactName').value || 'thread').replace(/\s+/g,'-').toLowerCase();
+    link.download = `text-thread-${contactName}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+const ALL_TABS = ['thread', 'polaroid', 'social', 'call', 'outcall', 'group', 'journal', 'lock'];
+function switchTab(tab){
+  ALL_TABS.forEach(t => {
+    const panel = document.getElementById('tab-' + t);
+    const btn = document.getElementById('tabbtn-' + t);
+    if(panel) panel.style.display = (t === tab) ? 'grid' : 'none';
+    if(btn) btn.classList.toggle('active', t === tab);
+  });
+}
+
+let polaroidPhotoSrc = null;
+
+function handlePolaroidUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    polaroidPhotoSrc = e.target.result;
+    renderPolaroid();
+  };
+  reader.readAsDataURL(file);
+}
+
+function polaroidFilterCss(mode){
+  switch(mode){
+    case 'warm': return 'saturate(1.15) sepia(0.18) contrast(1.03) brightness(1.03)';
+    case 'fade': return 'saturate(0.75) contrast(0.9) brightness(1.08)';
+    case 'bw':   return 'grayscale(1) contrast(1.05)';
+    default:     return 'none';
+  }
+}
+
+function renderPolaroid(){
+  const wrap = document.getElementById('polaroidPhotoWrap');
+  const filterMode = document.getElementById('polaroidFilter').value;
+  if(polaroidPhotoSrc){
+    wrap.innerHTML = `<img src="${polaroidPhotoSrc}" style="filter:${polaroidFilterCss(filterMode)};">`;
+  } else {
+    wrap.innerHTML = '<div class="polaroid-placeholder">upload a photo to see it here</div>';
+  }
+  document.getElementById('polaroidCaptionText').textContent = document.getElementById('polaroidCaption').value;
+  const rot = document.getElementById('polaroidRotation').value;
+  document.getElementById('polaroidFrame').style.transform = `rotate(${rot}deg)`;
+  const shadowOn = document.getElementById('polaroidShadow').checked;
+  document.getElementById('polaroidFrame').classList.toggle('has-shadow', shadowOn);
+}
+
+function downloadPolaroid(){
+  const stage = document.getElementById('polaroidStage');
+  html2canvas(stage, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'polaroid.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== SOCIAL POST ===================== */
+let socialPlatform = 'x';
+let socialAvatarSrc = null;
+let socialImageSrc = null;
+
+function setSocialPlatform(p){
+  socialPlatform = p;
+  document.getElementById('btn-platform-x').classList.toggle('active', p==='x');
+  document.getElementById('btn-platform-ig').classList.toggle('active', p==='ig');
+  document.getElementById('socialStat1Label').textContent = (p==='x') ? 'Likes' : 'Likes';
+  document.getElementById('socialStat2Label').textContent = (p==='x') ? 'Replies' : 'Comments';
+  document.getElementById('socialBodyLabel').textContent = (p==='x') ? 'Post text' : 'Caption';
+  const card = document.getElementById('socialCard');
+  card.classList.toggle('theme-x', p==='x');
+  card.classList.toggle('theme-ig', p==='ig');
+  renderSocial();
+}
+
+function handleSocialAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { socialAvatarSrc = e.target.result; renderSocial(); };
+  reader.readAsDataURL(file);
+}
+
+function handleSocialImageUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { socialImageSrc = e.target.result; renderSocial(); };
+  reader.readAsDataURL(file);
+}
+
+function renderSocial(){
+  const name = document.getElementById('socialName').value || 'Name';
+  const handle = document.getElementById('socialHandle').value || 'handle';
+  const body = document.getElementById('socialBody').value;
+  const stat1 = document.getElementById('socialStat1').value;
+  const stat2 = document.getElementById('socialStat2').value;
+  const time = document.getElementById('socialTime').value;
+
+  document.getElementById('socialNameOut').textContent = name;
+  document.getElementById('socialHandleOut').textContent = '@' + handle.replace(/^@/,'');
+
+  const avatarEl = document.getElementById('socialAvatar');
+  avatarEl.innerHTML = socialAvatarSrc ? `<img src="${socialAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
+
+  document.getElementById('socialBodyOut').textContent = body;
+  document.getElementById('socialCaptionOut').innerHTML = `<b>${escapeHtml(handle.replace(/^@/,''))}</b>${escapeHtml(body)}`;
+
+  const imgEl = document.getElementById('socialImageOut');
+  if(socialImageSrc){
+    imgEl.src = socialImageSrc;
+    imgEl.style.display = 'block';
+  } else {
+    imgEl.style.display = 'none';
+  }
+
+  document.getElementById('socialStatsOut').innerHTML =
+    `<span>💬 ${escapeHtml(stat2)}</span><span>🔁 ${Math.max(1, Math.round((parseFloat(stat1)||0)/6))}</span><span>❤️ ${escapeHtml(stat1)}</span>`;
+  document.getElementById('socialLikesOut').textContent = stat1 + ' likes';
+  document.getElementById('socialTimeOut').textContent = time;
+}
+
+function downloadSocial(){
+  const stage = document.getElementById('socialStage');
+  html2canvas(stage, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'social-post.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== INCOMING CALL ===================== */
+let callPhotoSrc = null;
+
+function handleCallPhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { callPhotoSrc = e.target.result; renderCall(); };
+  reader.readAsDataURL(file);
+}
+
+function renderCall(){
+  const name = document.getElementById('callName').value || 'Unknown';
+  const subtitle = document.getElementById('callSubtitle').value;
+  const time = document.getElementById('callTime').value || '9:41';
+  document.getElementById('callNameOut').textContent = name;
+  document.getElementById('callSubtitleOut').textContent = subtitle;
+  document.getElementById('callTimeOut').textContent = time;
+  document.getElementById('callLabelOut').textContent =
+    subtitle.toLowerCase().includes('facetime') ? 'FaceTime...' : 'incoming call';
+
+  const avatarEl = document.getElementById('callAvatarOut');
+  const screen = document.getElementById('callScreen');
+  if(callPhotoSrc){
+    avatarEl.innerHTML = `<img src="${callPhotoSrc}">`;
+    screen.style.backgroundImage = `url(${callPhotoSrc})`;
+  } else {
+    avatarEl.textContent = name.trim().charAt(0).toUpperCase() || '?';
+    screen.style.backgroundImage = 'none';
+  }
+}
+
+function downloadCall(){
+  const frame = document.querySelector('#tab-call .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'incoming-call.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== OUTGOING CALL ===================== */
+let outcallPhotoSrc = null;
+
+function handleOutcallPhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { outcallPhotoSrc = e.target.result; renderOutcall(); };
+  reader.readAsDataURL(file);
+}
+
+function renderOutcall(){
+  const name = document.getElementById('outcallName').value || 'Unknown';
+  const subtitle = document.getElementById('outcallSubtitle').value;
+  const time = document.getElementById('outcallTime').value || '9:41';
+  document.getElementById('outcallNameOut').textContent = name;
+  document.getElementById('outcallSubtitleOut').textContent = subtitle;
+  document.getElementById('outcallTimeOut').textContent = time;
+
+  const avatarEl = document.getElementById('outcallAvatarOut');
+  const screen = document.getElementById('outcallScreen');
+  if(outcallPhotoSrc){
+    avatarEl.innerHTML = `<img src="${outcallPhotoSrc}">`;
+    screen.style.backgroundImage = `url(${outcallPhotoSrc})`;
+  } else {
+    avatarEl.textContent = name.trim().charAt(0).toUpperCase() || '?';
+    screen.style.backgroundImage = 'none';
+  }
+}
+
+function downloadOutcall(){
+  const frame = document.querySelector('#tab-outcall .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'outgoing-call.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== GROUP CHAT ===================== */
+let groupParticipants = [];
+let groupMessages = [];
+let groupSenderChoice = 'me';
+const GROUP_COLORS = ['#ff9f43', '#54a0ff', '#5f27cd', '#1dd1a1', '#ff6b81', '#c8a951'];
+
+function addParticipant(){
+  const input = document.getElementById('newParticipantName');
+  const name = input.value.trim();
+  if(!name) return;
+  const color = GROUP_COLORS[groupParticipants.length % GROUP_COLORS.length];
+  groupParticipants.push({ name, color });
+  input.value = '';
+  renderGroup();
+}
+
+function removeParticipant(idx){
+  groupParticipants.splice(idx, 1);
+  renderGroup();
+}
+
+function addGroupMessage(){
+  const ta = document.getElementById('groupMsgText');
+  const text = ta.value.trim();
+  if(!text) return;
+  const senderSelect = document.getElementById('groupSender');
+  const sender = senderSelect.value;
+  groupMessages.push({ sender, text });
+  ta.value = '';
+  renderGroup();
+}
+
+function deleteGroupMessage(idx){
+  groupMessages.splice(idx, 1);
+  renderGroup();
+}
+
+function renderGroup(){
+  document.getElementById('groupNameOut').textContent = document.getElementById('groupName').value || 'Group';
+
+  // participant chips
+  const listEl = document.getElementById('participantList');
+  listEl.innerHTML = '';
+  groupParticipants.forEach((p, idx) => {
+    const chip = document.createElement('span');
+    chip.className = 'participant-chip';
+    chip.innerHTML = `<span class="dot" style="background:${p.color};"></span>${escapeHtml(p.name)}<button onclick="removeParticipant(${idx})">✕</button>`;
+    listEl.appendChild(chip);
+  });
+
+  // sender dropdown
+  const senderSelect = document.getElementById('groupSender');
+  const prevValue = senderSelect.value || groupSenderChoice;
+  senderSelect.innerHTML = '<option value="me">Me (right)</option>' +
+    groupParticipants.map(p => `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+  if([...senderSelect.options].some(o => o.value === prevValue)){
+    senderSelect.value = prevValue;
+  }
+
+  // bubbles
+  const area = document.getElementById('groupMessagesArea');
+  area.innerHTML = '';
+  let lastSender = null;
+  groupMessages.forEach(m => {
+    const isMe = m.sender === 'me';
+    if(!isMe && m.sender !== lastSender){
+      const participant = groupParticipants.find(p => p.name === m.sender);
+      const label = document.createElement('div');
+      label.className = 'bubble-sender-label';
+      label.style.color = participant ? participant.color : '#9397a6';
+      label.style.marginLeft = '4px';
+      label.textContent = m.sender;
+      area.appendChild(label);
+    }
+    lastSender = m.sender;
+    const row = document.createElement('div');
+    row.className = 'bubble-row ' + (isMe ? 'me' : 'them');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
+    bubble.textContent = m.text;
+    row.appendChild(bubble);
+    area.appendChild(row);
+  });
+
+  // side list
+  document.getElementById('groupMsgCount').textContent = groupMessages.length;
+  const msgListEl = document.getElementById('groupMsgList');
+  if(groupMessages.length === 0){
+    msgListEl.innerHTML = '<div class="empty-hint">No messages yet</div>';
+  } else {
+    msgListEl.innerHTML = '';
+    groupMessages.forEach((m, idx) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <span class="tag ${m.sender==='me' ? 'me':'them'}">${escapeHtml(m.sender === 'me' ? 'ME' : m.sender.toUpperCase())}</span>
+        <span class="txt">${escapeHtml(m.text)}</span>
+        <button class="del" onclick="deleteGroupMessage(${idx})">✕</button>
+      `;
+      msgListEl.appendChild(row);
+    });
+  }
+}
+
+function downloadGroup(){
+  const frame = document.querySelector('#tab-group .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'group-chat.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== NOTE / JOURNAL ===================== */
+function applyJournalStyle(){
+  const page = document.getElementById('journalPage');
+  const paper = document.getElementById('journalPaper').value;
+  const font = document.getElementById('journalFont').value;
+  const ink = document.getElementById('journalInk').value;
+  page.classList.remove('paper-lined', 'paper-grid', 'paper-blank', 'font-hand', 'font-type', 'font-print');
+  page.classList.add('paper-' + paper, 'font-' + font);
+  page.style.color = ink;
+}
+
+function downloadJournal(){
+  const stage = document.getElementById('journalStage');
+  html2canvas(stage, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'journal-page.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== LOCK SCREEN ===================== */
+let lockPhotoSrc = null;
+let lockNotifications = [];
+
+function handleLockPhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    lockPhotoSrc = e.target.result;
+    document.getElementById('btn-remove-lockphoto').style.display = 'block';
+    renderLock();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLockPhoto(){
+  lockPhotoSrc = null;
+  document.getElementById('lockPhotoUpload').value = '';
+  document.getElementById('btn-remove-lockphoto').style.display = 'none';
+  renderLock();
+}
+
+function addLockNotification(){
+  const app = document.getElementById('lockNotifApp').value.trim() || 'Messages';
+  const sender = document.getElementById('lockNotifSender').value.trim() || 'Unknown';
+  const text = document.getElementById('lockNotifText').value.trim();
+  const time = document.getElementById('lockNotifTime').value.trim() || 'now';
+  if(!text) return;
+  lockNotifications.push({ app, sender, text, time });
+  document.getElementById('lockNotifText').value = '';
+  renderLock();
+}
+
+function deleteLockNotification(idx){
+  lockNotifications.splice(idx, 1);
+  renderLock();
+}
+
+function renderLock(){
+  const screen = document.getElementById('lockScreen');
+  const preset = document.getElementById('lockPreset').value;
+  screen.classList.remove('lock-bg-sunset','lock-bg-ocean','lock-bg-midnight','lock-bg-mono');
+  if(lockPhotoSrc){
+    screen.style.backgroundImage = `url(${lockPhotoSrc})`;
+  } else {
+    screen.style.backgroundImage = '';
+    screen.classList.add('lock-bg-' + preset);
+  }
+
+  document.getElementById('lockTimeOut').textContent = document.getElementById('lockTime').value || '9:41';
+  document.getElementById('lockDateOut').textContent = document.getElementById('lockDate').value || '';
+
+  const area = document.getElementById('lockNotifArea');
+  area.innerHTML = '';
+  lockNotifications.forEach(n => {
+    const card = document.createElement('div');
+    card.className = 'lock-notif';
+    card.innerHTML = `
+      <div class="lock-notif-icon">💬</div>
+      <div class="lock-notif-body">
+        <div class="lock-notif-top"><span>${escapeHtml(n.app)}</span><span>${escapeHtml(n.time)}</span></div>
+        <div class="lock-notif-sender">${escapeHtml(n.sender)}</div>
+        <div class="lock-notif-text">${escapeHtml(n.text)}</div>
+      </div>
+    `;
+    area.appendChild(card);
+  });
+
+  document.getElementById('lockNotifCount').textContent = lockNotifications.length;
+  const listEl = document.getElementById('lockNotifList');
+  if(lockNotifications.length === 0){
+    listEl.innerHTML = '<div class="empty-hint">No notifications yet</div>';
+  } else {
+    listEl.innerHTML = '';
+    lockNotifications.forEach((n, idx) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <span class="tag them">${escapeHtml(n.sender.toUpperCase())}</span>
+        <span class="txt">${escapeHtml(n.text)}</span>
+        <button class="del" onclick="deleteLockNotification(${idx})">✕</button>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+}
+
+function downloadLock(){
+  const frame = document.querySelector('#tab-lock .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'lock-screen.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+// seed a couple example bubbles so the preview isn't empty on load
+messages = [
+  { sender: 'them', type: 'text', text: "you up?" },
+  { sender: 'me', type: 'text', text: "unfortunately" }
+];
+render();
+renderPolaroid();
+renderSocial();
+renderCall();
+renderOutcall();
+
+// seed a small group chat example
+groupParticipants = [
+  { name: 'Tony', color: GROUP_COLORS[0] },
+  { name: 'Steve', color: GROUP_COLORS[1] }
+];
+groupMessages = [
+  { sender: 'Tony', text: "who broke the coffee machine" },
+  { sender: 'Steve', text: "language" },
+  { sender: 'me', text: "wasn't me" }
+];
+renderGroup();
+
+// seed a lock screen notification example
+lockNotifications = [
+  { app: 'Messages', sender: 'Peter', text: 'wait are you awake', time: 'now' }
+];
+renderLock();
+</script>
+
+</body>
+</html>
