@@ -94,15 +94,6 @@
     padding: 28px 32px 60px;
   }
   @media (max-width: 880px){ .layout{ grid-template-columns: 1fr; } }
-  @media (max-width: 600px){
-    .topbar{ padding: 16px 18px; }
-    .brand-sub{ display:none; }
-    .layout{ padding: 16px 14px 40px; gap:18px; }
-    .tabbar{ padding: 10px 14px 0; gap:6px; }
-    .tab-btn{ font-size:11.5px; padding:8px 10px; }
-    .panel{ padding:16px; }
-    .row2, .row3{ grid-template-columns: 1fr; }
-  }
 
   .panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
   .section-label{
@@ -358,6 +349,17 @@
   .phone-screen.dark-mode .ig-note-uname{ color:#e0e0e0; }
   .phone-screen.dark-mode .ig-note-avatar{ border-color:#000; background:#333; color:#ccc; }
   .phone-screen.dark-mode .ig-note-filler .ig-note-avatar-wrap{ background:#333; }
+
+  /* mobile overrides — placed last so they win the cascade at narrow widths */
+  @media (max-width: 600px){
+    .topbar{ padding: 16px 18px; }
+    .brand-sub{ display:none; }
+    .layout{ padding: 16px 14px 40px; gap:18px; }
+    .tabbar{ padding: 10px 14px 0; gap:6px; }
+    .tab-btn{ font-size:11.5px; padding:8px 10px; }
+    .panel{ padding:16px; }
+    .row2, .row3{ grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -737,13 +739,50 @@ function renderProfile(){
   });
 }
 
+/* ===================== DOWNLOAD HELPER (handles iOS home-screen apps) ===================== */
+function isStandaloneApp(){
+  return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function triggerImageDownload(dataUrl, filename){
+  if(isStandaloneApp()){
+    showSaveOverlay(dataUrl);
+    return;
+  }
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = dataUrl;
+  link.click();
+}
+
+function showSaveOverlay(dataUrl){
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,11,14,0.94);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px;';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.style.cssText = 'max-width:100%;max-height:65vh;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.5);';
+
+  const msg = document.createElement('div');
+  msg.textContent = 'Press and hold the image, then choose "Save to Photos" or "Add to Photos".';
+  msg.style.cssText = "font-family:'Proxima Nova','Poppins',-apple-system,sans-serif;color:#fff;font-size:14px;text-align:center;max-width:320px;line-height:1.5;";
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Close';
+  closeBtn.style.cssText = "font-family:inherit;padding:10px 22px;border-radius:8px;border:none;background:#f5a623;color:#1a1204;font-weight:600;font-size:14px;cursor:pointer;";
+  closeBtn.onclick = () => overlay.remove();
+
+  overlay.appendChild(img);
+  overlay.appendChild(msg);
+  overlay.appendChild(closeBtn);
+  document.body.appendChild(overlay);
+}
+
 function downloadProfile(){
   const frame = document.querySelector('#tab-profile .phone-frame');
   html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'instagram-profile.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+        triggerImageDownload(canvas.toDataURL('image/png'), 'instagram-profile.png');
   });
 }
 
@@ -828,10 +867,7 @@ function renderChat(){
 function downloadChat(){
   const frame = document.querySelector('#tab-chats .phone-frame');
   html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'instagram-dm.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+        triggerImageDownload(canvas.toDataURL('image/png'), 'instagram-dm.png');
   });
 }
 
@@ -880,10 +916,7 @@ function renderStory(){
 function downloadStory(){
   const frame = document.querySelector('#tab-stories .phone-frame');
   html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'instagram-story.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+        triggerImageDownload(canvas.toDataURL('image/png'), 'instagram-story.png');
   });
 }
 
@@ -963,10 +996,7 @@ function renderNotes(){
 function downloadNotes(){
   const frame = document.querySelector('#tab-notes .phone-frame');
   html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'instagram-notes.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+        triggerImageDownload(canvas.toDataURL('image/png'), 'instagram-notes.png');
   });
 }
 
