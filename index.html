@@ -42,6 +42,8 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
+    flex-wrap: wrap;
+    gap: 10px 16px;
     padding: 22px 32px;
     border-bottom: 1px solid var(--line);
   }
@@ -67,7 +69,8 @@
   .topbar-right{
     display:flex;
     align-items:center;
-    gap:16px;
+    flex-wrap: wrap;
+    gap:10px 16px;
   }
   .nav-link{
     font-family: 'JetBrains Mono', monospace;
@@ -93,6 +96,17 @@
   }
   @media (max-width: 880px){
     .layout{ grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px){
+    .topbar{ padding: 16px 18px; }
+    .brand-sub{ display:none; }
+    .layout{ padding: 16px 14px 40px; gap:18px; }
+    .tabbar{ padding: 10px 14px 0; gap:6px; }
+    .tab-btn{ font-size:11.5px; padding:8px 10px; }
+    .panel{ padding:16px; }
+    .row2, .row3{ grid-template-columns: 1fr; }
+    .polaroid-stage, .social-stage, .journal-stage{ padding:16px; min-height:auto; }
   }
 
   .tabbar{
@@ -429,6 +443,7 @@
   }
   .phone-frame{
     width: 340px;
+    max-width: 100%;
     background: #000;
     border-radius: 46px;
     padding: 14px;
@@ -657,6 +672,7 @@
     padding: 18px 18px 70px;
     box-shadow: none;
     width: 320px;
+    max-width: 100%;
     position: relative;
     transition: box-shadow 0.15s ease;
   }
@@ -757,6 +773,7 @@
   }
   .social-card{
     width: 360px;
+    max-width: 100%;
     background: #fff;
     border-radius: 14px;
     overflow: hidden;
@@ -962,6 +979,7 @@
   }
   .journal-page{
     width: 380px;
+    max-width: 100%;
     min-height: 480px;
     padding: 40px 36px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
