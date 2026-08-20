@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipts — X / Twitter</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161c;
+    --panel: #1b1e26;
+    --panel-2: #21242e;
+    --line: #2c303c;
+    --ink: #e9e9ee;
+    --ink-dim: #9397a6;
+    --accent: #f5a623;
+    --accent-dim: #b97e1d;
+    --danger: #e0654f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(245,166,35,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(43,138,255,0.05), transparent 40%);
+    color: var(--ink);
+    font-family: 'Proxima Nova', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px;
+    padding: 22px 32px; border-bottom: 1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand-mark{
+    font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:11px; letter-spacing:0.14em;
+    color: var(--accent); border:1px solid var(--accent-dim); padding:3px 7px; border-radius:4px;
+  }
+  .brand-name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; }
+  .topbar-right{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; }
+  .brand-sub{ font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:0.03em; }
+  .nav-link{
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-dim); text-decoration:none;
+    border: 1px solid var(--line); padding: 6px 12px; border-radius: 6px;
+  }
+  .nav-link:hover{ color: var(--ink); border-color: var(--accent-dim); }
+
+  .tabbar{ display:flex; gap:4px; padding: 14px 32px 0; flex-wrap: wrap; }
+  .tab-btn{
+    font-family: inherit; font-size: 12.5px; font-weight:600; padding: 9px 16px;
+    border-radius: 8px 8px 0 0; border: 1px solid var(--line); border-bottom: none;
+    background: var(--bg); color: var(--ink-dim); cursor: pointer; position: relative; top: 1px; white-space: nowrap;
+  }
+  .tab-btn.active{ background: var(--panel); color: var(--ink); border-bottom: 1px solid var(--panel); }
+  .tabbar-line{ border-bottom: 1px solid var(--line); margin: 0 32px; }
+
+  .layout{ display:grid; grid-template-columns: 400px 1fr; gap: 28px; padding: 28px 32px 60px; }
+  @media (max-width: 880px){ .layout{ grid-template-columns: 1fr; } }
+
+  .panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .section-label{
+    font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 10.5px; letter-spacing: 0.12em;
+    color: var(--ink-dim); text-transform: uppercase; margin: 0 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after{ content:''; flex:1; height:1px; background: var(--line); }
+  .field{ margin-bottom: 14px; }
+  .field label{ display:block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+  .field input[type=text], .field textarea{
+    width:100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    color: var(--ink); padding: 9px 11px; font-size: 14px; font-family: inherit; resize: vertical;
+  }
+  .field input:focus, .field textarea:focus{ outline: none; border-color: var(--accent-dim); }
+  .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+  select.styled-select{
+    width:100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    color: var(--ink); padding: 9px 11px; font-size: 14px; font-family: inherit;
+  }
+
+  .sender-toggle{ display:flex; gap:8px; margin-bottom:10px; }
+  .sender-toggle button{
+    flex:1; padding:7px; border-radius:7px; border:1px solid var(--line);
+    background: var(--panel); color: var(--ink-dim); font-size:12.5px; cursor:pointer; font-family:inherit;
+  }
+  .sender-toggle button.active-me{ border-color:#1d9bf0; color:#c7e5ff; background: rgba(29,155,240,0.15); }
+  .sender-toggle button.active-them{ border-color:#565a66; color: var(--ink); background: rgba(255,255,255,0.05); }
+
+  .composer{ background: var(--panel-2); border:1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+  .composer textarea{
+    width:100%; background: var(--panel); border:1px solid var(--line); border-radius:7px;
+    color:var(--ink); padding:9px 10px; font-size:13.5px; font-family:inherit; min-height:56px; resize:vertical;
+  }
+  .composer-footer{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+  .btn{ font-family: inherit; font-size: 13px; font-weight:600; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; }
+  .btn-accent{ background: var(--accent); color: #1a1204; }
+  .btn-accent:hover{ background:#ffb63d; }
+  .btn-outline{ background: none; border: 1px solid var(--line); color: var(--ink-dim); display:inline-flex; align-items:center; justify-content:center; }
+  .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
+
+  .msg-list{ display:flex; flex-direction:column; gap:7px; max-height: 280px; overflow-y:auto; padding-right:2px; }
+  .msg-row{ display:flex; align-items:flex-start; gap:8px; background: var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+  .msg-row .tag{ font-family:'JetBrains Mono', monospace; font-size:9.5px; padding:2px 5px; border-radius:4px; white-space:nowrap; margin-top:2px; }
+  .tag.me{ background: rgba(29,155,240,0.2); color:#8ecdff; }
+  .tag.them{ background: rgba(255,255,255,0.09); color: var(--ink-dim); }
+  .msg-row .txt{ flex:1; font-size:12.5px; color: var(--ink); line-height:1.4; word-break: break-word; }
+  .msg-row .thumb{ width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .msg-row .del{ background:none; border:none; color: var(--danger); cursor:pointer; font-size:13px; padding:2px 4px; flex-shrink:0; }
+  .empty-hint{ font-size:12.5px; color: var(--ink-dim); text-align:center; padding: 18px 8px; border: 1px dashed var(--line); border-radius:8px; }
+
+  .download-bar{ margin-top:18px; }
+  .btn-download{ width:100%; background: var(--ink); color: #14161c; padding: 12px; font-size:14px; border-radius:9px; }
+  .btn-download:hover{ background:#fff; }
+  .btn-storyboard{
+    width:100%; margin-top:8px; padding:10px; font-size:13px; border-radius:9px;
+    background:none; border:1px solid var(--accent-dim); color: var(--accent);
+  }
+  .btn-storyboard:hover{ background: rgba(245,166,35,0.08); }
+  .btn-storyboard:disabled{ opacity:0.6; cursor:default; }
+
+  .upload-drop{
+    border: 1.5px dashed var(--line); border-radius: 10px; padding: 16px 12px; text-align:center;
+    cursor:pointer; color: var(--ink-dim); font-size: 13px; display:block;
+  }
+  .upload-drop:hover{ border-color: var(--accent-dim); color: var(--ink); }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; font-size:13px; color: var(--ink); cursor:pointer; }
+  .checkbox-row input{ width:15px; height:15px; accent-color: var(--accent); cursor:pointer; }
+
+  .preview-wrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .phone-frame{
+    width: 340px; max-width:100%; background: #000; border-radius: 46px; padding: 14px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 0 1px #050505;
+  }
+  .phone-screen{ background: #fff; border-radius: 34px; overflow:hidden; display:flex; flex-direction:column; height: 640px; }
+  .status-bar{ display:flex; justify-content:space-between; align-items:center; padding: 8px 22px 2px; font-size:13px; font-weight:600; color:#000; }
+  .hint{ font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--ink-dim); text-align:center; max-width:340px; }
+
+  /* ============ PROFILE ============ */
+  .tw-topbar{ display:flex; align-items:center; gap:16px; padding: 8px 14px; font-weight:700; font-size:15px; color:#000; }
+  .tw-topbar .tw-count{ font-size:11px; font-weight:400; color:#71767b; margin-top:-2px; }
+  .tw-profile-body{ flex:1; overflow-y:auto; }
+  .tw-banner{ width:100%; height:120px; background: linear-gradient(135deg,#1d9bf0,#0c4a75); }
+  .tw-banner img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .tw-avatar-row{ padding: 0 14px; margin-top:-38px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .tw-avatar{
+    width:76px; height:76px; border-radius:50%; border:4px solid #fff; overflow:hidden;
+    background: linear-gradient(135deg,#8e8e93,#57575b); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:24px;
+  }
+  .tw-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .tw-edit-btn{ margin-bottom:10px; border:1px solid #cfd9de; border-radius:20px; padding:7px 16px; font-size:13px; font-weight:700; color:#000; }
+  .tw-profile-info{ padding: 10px 14px; }
+  .tw-name-row{ display:flex; align-items:center; gap:4px; font-weight:800; font-size:17px; color:#000; }
+  .tw-verified{ color:#1d9bf0; font-size:15px; }
+  .tw-handle{ color:#71767b; font-size:14px; }
+  .tw-bio{ font-size:14px; color:#000; margin-top:8px; white-space:pre-wrap; line-height:1.4; }
+  .tw-meta-row{ display:flex; gap:14px; margin-top:8px; color:#71767b; font-size:13px; flex-wrap:wrap; }
+  .tw-follow-row{ display:flex; gap:18px; margin-top:10px; font-size:13px; color:#71767b; }
+  .tw-follow-row b{ color:#000; }
+  .tw-tabicons{ display:flex; justify-content:space-around; border-top:1px solid #eff3f4; margin-top:12px; padding-top:6px; }
+  .tw-tabicons span{ font-size:13px; padding:10px; color:#71767b; }
+  .tw-tabicons span.sel{ color:#000; font-weight:700; border-bottom:3px solid #1d9bf0; margin-bottom:-7px; padding-bottom:13px; }
+
+  /* ============ TWEET / THREAD ============ */
+  .tweet-header-bar{ display:flex; align-items:center; justify-content:space-between; padding: 8px 14px; font-weight:700; font-size:16px; color:#000; border-bottom:1px solid #eff3f4; }
+  .tw-header-more{ font-weight:700; letter-spacing:2px; }
+  .tweet-feed{ flex:1; overflow-y:auto; }
+  /* main/detail post card — the big post at the top, matching X's post-detail view */
+  .tweet-detail-card{ padding: 14px; border-bottom: 8px solid #eff3f4; position:relative; }
+  .tweet-detail-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .tweet-detail-header{ display:flex; gap:12px; align-items:flex-start; }
+  .tweet-detail-avatar{
+    width:54px; height:54px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background: linear-gradient(135deg,#8e8e93,#57575b); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:20px;
+  }
+  .tweet-detail-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .tweet-detail-names{ display:flex; flex-direction:column; }
+  .tweet-detail-name-row{ display:flex; align-items:center; gap:5px; font-weight:800; font-size:16px; color:#000; }
+  .tweet-verified{ color:#1d9bf0; font-size:14px; }
+  .tweet-detail-handle{ color:#71767b; font-size:14px; }
+  .tweet-xcom{ font-size:16px; font-weight:800; color:#536471; white-space:nowrap; flex-shrink:0; }
+  .tweet-xcom span{ font-weight:400; }
+  .tweet-detail-text{ font-size:19px; color:#000; margin-top:14px; white-space:pre-wrap; word-break:break-word; line-height:1.3; }
+  .tweet-detail-image{ margin-top:12px; border-radius:16px; overflow:hidden; border:1px solid #eff3f4; }
+  .tweet-detail-image img{ width:100%; display:block; }
+  .tweet-detail-time{ color:#71767b; font-size:14px; margin-top:14px; }
+  .tweet-detail-icons{
+    display:flex; justify-content:space-between; margin-top:14px; padding-top:12px;
+    border-top:1px solid #eff3f4; color:#71767b; font-size:16px;
+  }
+  .tweet-detail-icons span{ display:flex; align-items:center; gap:5px; font-size:13px; }
+  .tweet-lock{ font-size:13px; }
+
+  /* reply / comment cards below the detail post */
+  .tweet-reply-card{ display:flex; flex-direction:column; gap:2px; padding: 12px 14px; border-bottom: 1px solid #eff3f4; }
+  .tweet-reply-top{ display:flex; align-items:flex-start; gap:8px; }
+  .tweet-reply-avatar{
+    width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background: linear-gradient(135deg,#8e8e93,#57575b); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px;
+  }
+  .tweet-reply-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .tweet-reply-body{ flex:1; min-width:0; }
+  .tweet-reply-header-row{ display:flex; align-items:center; gap:5px; font-size:14px; flex-wrap:wrap; }
+  .tweet-reply-name{ font-weight:700; color:#000; }
+  .tweet-reply-handle, .tweet-reply-time{ color:#71767b; }
+  .tweet-reply-more{ margin-left:auto; color:#71767b; font-weight:700; letter-spacing:1px; flex-shrink:0; }
+  .tweet-reply-text{ font-size:14px; color:#000; margin-top:2px; white-space:pre-wrap; word-break:break-word; }
+  .tweet-reply-icons{ display:flex; justify-content:space-between; margin-top:8px; color:#71767b; font-size:14px; max-width:340px; }
+
+  /* ============ DMs ============ */
+  .tw-dm-header{ display:flex; align-items:center; gap:10px; padding:8px 12px 12px; border-bottom:1px solid #eff3f4; color:#000; }
+  .tw-dm-avatar{
+    width:34px; height:34px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background: linear-gradient(135deg,#8e8e93,#57575b); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px;
+  }
+  .tw-dm-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .tw-dm-name{ font-size:14px; font-weight:700; }
+  .tw-dm-status{ font-size:11px; color:#8a8a8e; }
+  .tw-dm-messages{ flex:1; overflow-y:auto; padding:12px 12px 6px; display:flex; flex-direction:column; gap:5px; }
+  .tw-dm-row{ display:flex; }
+  .tw-dm-row.me{ justify-content:flex-end; }
+  .tw-dm-row.them{ justify-content:flex-start; }
+  .tw-dm-bubble{ max-width:72%; padding:9px 14px; font-size:14px; line-height:1.3; word-break:break-word; border-radius:20px; }
+  .tw-dm-bubble.them{ background:#eff3f4; color:#000; }
+  .tw-dm-bubble.me{ background:#1d9bf0; color:#fff; }
+  .tw-dm-composer{ display:flex; align-items:center; gap:8px; padding:8px 12px 14px; }
+  .tw-dm-composer .pill{ flex:1; height:34px; border-radius:18px; background:#eff3f4; display:flex; align-items:center; padding-left:14px; font-size:13px; color:#8a8a8e; }
+
+  /* ============ NOTIFICATIONS ============ */
+  .tw-notif-header{ padding: 10px 14px; font-size:16px; font-weight:700; color:#000; border-bottom:1px solid #eff3f4; }
+  .tw-notif-list{ flex:1; overflow-y:auto; }
+  .tw-notif-row{ display:flex; gap:12px; padding: 12px 14px; border-bottom:1px solid #f7f8f8; }
+  .tw-notif-icon{ width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .tw-notif-body{ flex:1; min-width:0; }
+  .tw-notif-avatar{
+    width:26px; height:26px; border-radius:50%; overflow:hidden; flex-shrink:0; margin-bottom:4px;
+    background: linear-gradient(135deg,#8e8e93,#57575b); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:11px;
+  }
+  .tw-notif-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .tw-notif-text{ font-size:14px; color:#000; line-height:1.35; }
+  .tw-notif-text b{ font-weight:700; }
+  .tw-notif-snippet{ font-size:13px; color:#71767b; margin-top:3px; }
+  .tw-notif-time{ font-size:12px; color:#71767b; margin-left:auto; flex-shrink:0; padding-left:8px; }
+
+  /* ============ DARK MODE ============ */
+  .phone-screen.dark-mode{ background:#000; }
+  .phone-screen.dark-mode .status-bar{ color:#fff; }
+  .phone-screen.dark-mode .tw-topbar{ color:#fff; }
+  .phone-screen.dark-mode .tw-topbar .tw-count{ color:#71767b; }
+  .phone-screen.dark-mode .tw-avatar{ border-color:#000; }
+  .phone-screen.dark-mode .tw-edit-btn{ border-color:#536471; color:#fff; }
+  .phone-screen.dark-mode .tw-name-row{ color:#fff; }
+  .phone-screen.dark-mode .tw-bio{ color:#fff; }
+  .phone-screen.dark-mode .tw-tabicons{ border-top-color:#2f3336; }
+  .phone-screen.dark-mode .tw-tabicons span.sel{ color:#fff; }
+
+  .phone-screen.dark-mode .tweet-header-bar{ color:#fff; border-bottom-color:#2f3336; }
+
+  .phone-screen.dark-mode .tweet-detail-card{ border-bottom-color:#15181c; }
+  .phone-screen.dark-mode .tweet-detail-name-row{ color:#fff; }
+  .phone-screen.dark-mode .tweet-xcom{ color:#e7e9ea; }
+  .phone-screen.dark-mode .tweet-detail-text{ color:#fff; }
+  .phone-screen.dark-mode .tweet-detail-image{ border-color:#2f3336; }
+  .phone-screen.dark-mode .tweet-detail-icons{ border-top-color:#2f3336; }
+  .phone-screen.dark-mode .tweet-lock{ color:#fff; }
+  .tweet-lock{ color:#000; }
+
+  .phone-screen.dark-mode .tweet-reply-card{ border-bottom-color:#2f3336; }
+  .phone-screen.dark-mode .tweet-reply-name{ color:#fff; }
+  .phone-screen.dark-mode .tweet-reply-text{ color:#fff; }
+
+  .phone-screen.dark-mode .tw-dm-header{ color:#fff; border-bottom-color:#2f3336; }
+  .phone-screen.dark-mode .tw-dm-bubble.them{ background:#2f3336; color:#fff; }
+  .phone-screen.dark-mode .tw-dm-composer .pill{ background:#2f3336; color:#8a8a8e; }
+
+  .phone-screen.dark-mode .tw-notif-header{ color:#fff; border-bottom-color:#2f3336; }
+  .phone-screen.dark-mode .tw-notif-row{ border-bottom-color:#1c1f23; }
+  .phone-screen.dark-mode .tw-notif-text{ color:#fff; }
+
+  /* mobile overrides — placed last so they win the cascade at narrow widths */
+  @media (max-width: 600px){
+    .topbar{ padding: 16px 18px; }
+    .brand-sub{ display:none; }
+    .layout{ padding: 16px 14px 40px; gap:18px; }
+    .tabbar{ padding: 10px 14px 0; gap:6px; }
+    .tab-btn{ font-size:11.5px; padding:8px 10px; }
+    .panel{ padding:16px; }
+    .row2, .row3{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-mark">RCPT</span>
+    <span class="brand-name">Receipts</span>
+  </div>
+  <div class="topbar-right">
+    <span class="brand-sub">x / twitter props</span>
+    <a class="nav-link" href="index.html">Main tools</a>
+    <a class="nav-link" href="instagram.html">Instagram tools</a>
+    <a class="nav-link" href="storyboard.html">Storyboard</a>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active" id="tabbtn-profile" onclick="switchTab('profile')">Profile</button>
+  <button class="tab-btn" id="tabbtn-tweet" onclick="switchTab('tweet')">Tweet / Thread</button>
+  <button class="tab-btn" id="tabbtn-dms" onclick="switchTab('dms')">DMs</button>
+  <button class="tab-btn" id="tabbtn-notifs" onclick="switchTab('notifs')">Notifications</button>
+</div>
+<div class="tabbar-line"></div>
+
+<!-- PROFILE TAB -->
+<div class="layout" id="tab-profile">
+  <div class="panel">
+    <p class="section-label">Account</p>
+    <div class="field">
+      <label>Display name</label>
+      <input type="text" id="pfName" value="Peter Parker" oninput="renderProfile()">
+    </div>
+    <div class="field">
+      <label>Handle</label>
+      <input type="text" id="pfHandle" value="spidermanparker" oninput="renderProfile()">
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="pfVerified" onchange="renderProfile()">
+        Verified badge
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="pfDarkMode" onchange="renderProfile()">
+        Dark mode
+      </label>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label class="upload-drop" for="pfAvatarUpload">Avatar photo</label>
+        <input type="file" id="pfAvatarUpload" accept="image/*" style="display:none;" onchange="handlePfAvatarUpload(event)">
+      </div>
+      <div class="field">
+        <label class="upload-drop" for="pfBannerUpload">Banner photo</label>
+        <input type="file" id="pfBannerUpload" accept="image/*" style="display:none;" onchange="handlePfBannerUpload(event)">
+      </div>
+    </div>
+
+    <p class="section-label">Bio</p>
+    <div class="field">
+      <textarea id="pfBio" rows="3" oninput="renderProfile()">friendly neighborhood ~
+queens, ny</textarea>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Location</label>
+        <input type="text" id="pfLocation" value="Queens, NY" oninput="renderProfile()">
+      </div>
+      <div class="field">
+        <label>Joined</label>
+        <input type="text" id="pfJoined" value="Joined June 2019" oninput="renderProfile()">
+      </div>
+    </div>
+
+    <p class="section-label">Stats</p>
+    <div class="row2">
+      <div class="field">
+        <label>Following</label>
+        <input type="text" id="pfFollowing" value="217" oninput="renderProfile()">
+      </div>
+      <div class="field">
+        <label>Followers</label>
+        <input type="text" id="pfFollowers" value="4,821" oninput="renderProfile()">
+      </div>
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadProfile()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addProfileToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="profileScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="tw-topbar">
+          <span>←</span>
+          <div><div id="pfTopName">Peter Parker</div><div class="tw-count" id="pfTopCount">142 posts</div></div>
+        </div>
+        <div class="tw-profile-body">
+          <div class="tw-banner" id="pfBannerOut"></div>
+          <div class="tw-avatar-row">
+            <div class="tw-avatar" id="pfAvatarOut">P</div>
+            <div class="tw-edit-btn">Edit profile</div>
+          </div>
+          <div class="tw-profile-info">
+            <div class="tw-name-row"><span id="pfNameOut">Peter Parker</span><span class="tw-verified" id="pfVerifiedOut" style="display:none;">✔️</span></div>
+            <div class="tw-handle" id="pfHandleOut">@spidermanparker</div>
+            <div class="tw-bio" id="pfBioOut"></div>
+            <div class="tw-meta-row">
+              <span id="pfLocationOut">📍 Queens, NY</span>
+              <span id="pfJoinedOut">📅 Joined June 2019</span>
+            </div>
+            <div class="tw-follow-row">
+              <span><b id="pfFollowingOut">217</b> Following</span>
+              <span><b id="pfFollowersOut">4,821</b> Followers</span>
+            </div>
+          </div>
+          <div class="tw-tabicons"><span class="sel">Posts</span><span>Replies</span><span>Media</span><span>Likes</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Banner and avatar are both optional — a gradient placeholder shows until you upload one.</p>
+  </div>
+</div>
+
+<!-- TWEET / THREAD TAB -->
+<div class="layout" id="tab-tweet" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Poster</p>
+    <div class="row2">
+      <div class="field">
+        <label>Display name</label>
+        <input type="text" id="twName" value="Peter Parker" oninput="renderTweet()">
+      </div>
+      <div class="field">
+        <label>Handle</label>
+        <input type="text" id="twHandle" value="spidermanparker" oninput="renderTweet()">
+      </div>
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="twVerified" onchange="renderTweet()">
+        Verified badge
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="twPrivate" onchange="renderTweet()">
+        Private account
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="twDarkMode" onchange="renderTweet()">
+        Dark mode
+      </label>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="twAvatarUpload">Upload poster's avatar</label>
+      <input type="file" id="twAvatarUpload" accept="image/*" style="display:none;" onchange="handleTwAvatarUpload(event)">
+    </div>
+
+    <p class="section-label">Add a post to the thread</p>
+    <div class="composer">
+      <textarea id="twText" placeholder="What's happening?" rows="3"></textarea>
+      <div class="row2" style="margin-top:8px;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Time · Date</label>
+          <input type="text" id="twTime" value="00:51 · 8/20/26">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label class="upload-drop" for="twImageUpload">Attach photo</label>
+          <input type="file" id="twImageUpload" accept="image/*" style="display:none;" onchange="handleTwImageUpload(event)">
+        </div>
+      </div>
+      <div class="row2" style="margin-top:8px;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Likes</label>
+          <input type="text" id="twLikes" value="2.4K">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Replies</label>
+          <input type="text" id="twReplies" value="318">
+        </div>
+      </div>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addTweet()">Add to thread</button>
+      </div>
+    </div>
+
+    <p class="section-label">Add a comment reply</p>
+    <div class="composer">
+      <div class="field" style="margin-bottom:8px;">
+        <label>Reply to which post</label>
+        <select class="styled-select" id="twCommentTarget"></select>
+      </div>
+      <div class="row2" style="margin-bottom:8px;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Commenter name</label>
+          <input type="text" id="twCommentName" value="MJ Watson">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Handle</label>
+          <input type="text" id="twCommentHandle" value="mjwatson">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label class="upload-drop" for="twCommentAvatarUpload">Upload commenter's avatar (optional)</label>
+        <input type="file" id="twCommentAvatarUpload" accept="image/*" style="display:none;" onchange="handleTwCommentAvatarUpload(event)">
+      </div>
+      <textarea id="twCommentText" placeholder="Their reply..." rows="2"></textarea>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addTweetComment()">Add comment</button>
+      </div>
+    </div>
+
+    <p class="section-label">Thread (<span id="twCount">0</span>)</p>
+    <div class="msg-list" id="twList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadTweet()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addTweetToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="tweetScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="tweet-header-bar"><span>←</span><span>Post</span><span class="tw-header-more">•••</span></div>
+        <div class="tweet-feed" id="tweetFeed"></div>
+      </div>
+    </div>
+    <p class="hint">Add posts one at a time — they stack into a thread with the connecting line X uses.</p>
+  </div>
+</div>
+
+<!-- DMS TAB -->
+<div class="layout" id="tab-dms" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Conversation</p>
+    <div class="field">
+      <label>Contact name</label>
+      <input type="text" id="dmName" value="mj.jonesss" oninput="renderDms()">
+    </div>
+    <div class="field">
+      <label>Status text</label>
+      <input type="text" id="dmStatus" value="Active now" oninput="renderDms()">
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="dmAvatarUpload">Upload contact photo</label>
+      <input type="file" id="dmAvatarUpload" accept="image/*" style="display:none;" onchange="handleDmAvatarUpload(event)">
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="dmDarkMode" onchange="renderDms()">
+        Dark mode
+      </label>
+    </div>
+
+    <p class="section-label">Add message</p>
+    <div class="composer">
+      <div class="sender-toggle">
+        <button id="dm-btn-me" class="active-me" onclick="setDmSender('me')">Me (right)</button>
+        <button id="dm-btn-them" onclick="setDmSender('them')">Them (left)</button>
+      </div>
+      <textarea id="dmMsgText" placeholder="Type the line..."></textarea>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addDmMessage()">Add bubble</button>
+      </div>
+    </div>
+
+    <p class="section-label">Thread (<span id="dmMsgCount">0</span>)</p>
+    <div class="msg-list" id="dmMsgList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadDms()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addDmsToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="dmsScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="tw-dm-header">
+          <div class="tw-dm-avatar" id="dmAvatarOut">M</div>
+          <div>
+            <div class="tw-dm-name" id="dmNameOut">mj.jonesss</div>
+            <div class="tw-dm-status" id="dmStatusOut">Active now</div>
+          </div>
+        </div>
+        <div class="tw-dm-messages" id="dmMessagesArea"></div>
+        <div class="tw-dm-composer"><div class="pill">Start a new message</div></div>
+      </div>
+    </div>
+    <p class="hint">Solid blue bubbles for you, gray for them — matches X's DM style.</p>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS TAB -->
+<div class="layout" id="tab-notifs" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Display</p>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="notifDarkMode" onchange="renderNotifs()">
+        Dark mode
+      </label>
+    </div>
+
+    <p class="section-label">Add notification</p>
+    <div class="composer">
+      <div class="field" style="margin-bottom:8px;">
+        <label>Type</label>
+        <select class="styled-select" id="notifType">
+          <option value="like">Like</option>
+          <option value="retweet">Retweet</option>
+          <option value="reply">Reply</option>
+          <option value="follow">Follow</option>
+          <option value="mention">Mention</option>
+        </select>
+      </div>
+      <div class="row2" style="margin-bottom:8px;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Actor name</label>
+          <input type="text" id="notifActor" value="MJ Watson">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Time</label>
+          <input type="text" id="notifTime" value="2m">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label class="upload-drop" for="notifAvatarUpload">Upload actor's avatar (optional)</label>
+        <input type="file" id="notifAvatarUpload" accept="image/*" style="display:none;" onchange="handleNotifAvatarUpload(event)">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Post snippet (optional)</label>
+        <input type="text" id="notifSnippet" placeholder="e.g. the quoted post text">
+      </div>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addNotif()">Add notification</button>
+      </div>
+    </div>
+
+    <p class="section-label">Notifications (<span id="notifCount">0</span>)</p>
+    <div class="msg-list" id="notifList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadNotifs()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addNotifsToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="notifsScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="tw-notif-header">Notifications</div>
+        <div class="tw-notif-list" id="notifListOut"></div>
+      </div>
+    </div>
+    <p class="hint">Mix likes, retweets, replies, follows, and mentions into one feed.</p>
+  </div>
+</div>
+
+<script>
+function switchTab(tab){
+  const tabs = ['profile','tweet','dms','notifs'];
+  tabs.forEach(t => {
+    document.getElementById('tab-' + t).style.display = (t === tab) ? 'grid' : 'none';
+    document.getElementById('tabbtn-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ===================== DOWNLOAD HELPER (handles iOS home-screen apps) ===================== */
+function isStandaloneApp(){
+  return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function triggerImageDownload(dataUrl, filename){
+  if(isStandaloneApp()){
+    showSaveOverlay(dataUrl);
+    return;
+  }
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = dataUrl;
+  link.click();
+}
+
+function showSaveOverlay(dataUrl){
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,11,14,0.94);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px;';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.style.cssText = 'max-width:100%;max-height:65vh;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.5);';
+
+  const msg = document.createElement('div');
+  msg.textContent = 'Press and hold the image, then choose "Save to Photos" or "Add to Photos".';
+  msg.style.cssText = "font-family:'Proxima Nova','Poppins',-apple-system,sans-serif;color:#fff;font-size:14px;text-align:center;max-width:320px;line-height:1.5;";
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Close';
+  closeBtn.style.cssText = "font-family:inherit;padding:10px 22px;border-radius:8px;border:none;background:#f5a623;color:#1a1204;font-weight:600;font-size:14px;cursor:pointer;";
+  closeBtn.onclick = () => overlay.remove();
+
+  overlay.appendChild(img);
+  overlay.appendChild(msg);
+  overlay.appendChild(closeBtn);
+  document.body.appendChild(overlay);
+}
+
+/* ===================== STORYBOARD ===================== */
+const STORYBOARD_KEY = 'receipts_storyboard_v1';
+
+function pushPanelToStoryboard(canvas, label, btnEl){
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  let panels = [];
+  try { panels = JSON.parse(localStorage.getItem(STORYBOARD_KEY) || '[]'); } catch(e){ panels = []; }
+  panels.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), type: 'image', img: dataUrl, sourceLabel: label });
+  try {
+    localStorage.setItem(STORYBOARD_KEY, JSON.stringify(panels));
+    if(btnEl){
+      const original = btnEl.textContent;
+      btnEl.textContent = 'Added ✓';
+      btnEl.disabled = true;
+      setTimeout(() => { btnEl.textContent = original; btnEl.disabled = false; }, 1200);
+    }
+  } catch(e){
+    alert('Storyboard storage is full. Open the Storyboard page and download or clear some panels, then try again.');
+  }
+}
+
+function addProfileToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-profile .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'X Profile', btnEl));
+}
+function addTweetToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-tweet .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'X Thread', btnEl));
+}
+function addDmsToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-dms .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'X DM', btnEl));
+}
+function addNotifsToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-notifs .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'X Notifications', btnEl));
+}
+
+/* ===================== PROFILE ===================== */
+let pfAvatarSrc = null;
+let pfBannerSrc = null;
+
+function handlePfAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { pfAvatarSrc = e.target.result; renderProfile(); };
+  reader.readAsDataURL(file);
+}
+function handlePfBannerUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { pfBannerSrc = e.target.result; renderProfile(); };
+  reader.readAsDataURL(file);
+}
+
+function renderProfile(){
+  const name = document.getElementById('pfName').value || 'Name';
+  const handle = document.getElementById('pfHandle').value || 'handle';
+  const verified = document.getElementById('pfVerified').checked;
+  document.getElementById('profileScreen').classList.toggle('dark-mode', document.getElementById('pfDarkMode').checked);
+
+  document.getElementById('pfTopName').textContent = name;
+  document.getElementById('pfNameOut').textContent = name;
+  document.getElementById('pfHandleOut').textContent = '@' + handle.replace(/^@/,'');
+  document.getElementById('pfVerifiedOut').style.display = verified ? 'inline' : 'none';
+  document.getElementById('pfBioOut').textContent = document.getElementById('pfBio').value;
+  document.getElementById('pfLocationOut').textContent = '📍 ' + document.getElementById('pfLocation').value;
+  document.getElementById('pfJoinedOut').textContent = '📅 ' + document.getElementById('pfJoined').value;
+  document.getElementById('pfFollowingOut').textContent = document.getElementById('pfFollowing').value;
+  document.getElementById('pfFollowersOut').textContent = document.getElementById('pfFollowers').value;
+
+  const avatarEl = document.getElementById('pfAvatarOut');
+  avatarEl.innerHTML = pfAvatarSrc ? `<img src="${pfAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
+
+  const bannerEl = document.getElementById('pfBannerOut');
+  bannerEl.innerHTML = pfBannerSrc ? `<img src="${pfBannerSrc}">` : '';
+}
+
+function downloadProfile(){
+  const frame = document.querySelector('#tab-profile .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    triggerImageDownload(canvas.toDataURL('image/png'), 'x-profile.png');
+  });
+}
+
+/* ===================== TWEET / THREAD ===================== */
+let twAvatarSrc = null;
+let twImageDraftSrc = null;
+let twCommentDraftAvatarSrc = null;
+let tweets = [];
+
+function handleTwAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { twAvatarSrc = e.target.result; renderTweet(); };
+  reader.readAsDataURL(file);
+}
+
+function handleTwImageUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { twImageDraftSrc = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function handleTwCommentAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { twCommentDraftAvatarSrc = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function addTweet(){
+  const text = document.getElementById('twText').value.trim();
+  if(!text) return;
+  tweets.push({
+    text,
+    time: document.getElementById('twTime').value || '',
+    image: twImageDraftSrc,
+    likes: document.getElementById('twLikes').value || '',
+    replies: document.getElementById('twReplies').value || '',
+    comments: []
+  });
+  document.getElementById('twText').value = '';
+  document.getElementById('twImageUpload').value = '';
+  twImageDraftSrc = null;
+  renderTweet();
+}
+
+function deleteTweet(idx){
+  tweets.splice(idx, 1);
+  renderTweet();
+}
+
+function addTweetComment(){
+  const select = document.getElementById('twCommentTarget');
+  const targetIdx = parseInt(select.value);
+  if(isNaN(targetIdx) || !tweets[targetIdx]) return;
+  const name = document.getElementById('twCommentName').value.trim();
+  const text = document.getElementById('twCommentText').value.trim();
+  if(!name || !text) return;
+  tweets[targetIdx].comments.push({
+    name,
+    handle: document.getElementById('twCommentHandle').value.trim(),
+    avatarSrc: twCommentDraftAvatarSrc,
+    text
+  });
+  document.getElementById('twCommentText').value = '';
+  document.getElementById('twCommentAvatarUpload').value = '';
+  twCommentDraftAvatarSrc = null;
+  renderTweet();
+}
+
+function deleteTweetComment(tweetIdx, commentIdx){
+  tweets[tweetIdx].comments.splice(commentIdx, 1);
+  renderTweet();
+}
+
+function renderTweet(){
+  const name = document.getElementById('twName').value || 'Name';
+  const handle = document.getElementById('twHandle').value || 'handle';
+  const verified = document.getElementById('twVerified').checked;
+  const isPrivate = document.getElementById('twPrivate').checked;
+  document.getElementById('tweetScreen').classList.toggle('dark-mode', document.getElementById('twDarkMode').checked);
+
+  const feed = document.getElementById('tweetFeed');
+  feed.innerHTML = '';
+  const avatarHtml = twAvatarSrc ? `<img src="${twAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
+
+  tweets.forEach((t) => {
+    const card = document.createElement('div');
+    card.className = 'tweet-detail-card';
+
+    const repliesHtml = (t.comments && t.comments.length > 0)
+      ? t.comments.map(c => `
+          <div class="tweet-reply-card">
+            <div class="tweet-reply-top">
+              <div class="tweet-reply-avatar">${c.avatarSrc ? `<img src="${c.avatarSrc}">` : (c.name.trim().charAt(0).toUpperCase() || '?')}</div>
+              <div class="tweet-reply-body">
+                <div class="tweet-reply-header-row">
+                  <span class="tweet-reply-name">${escapeHtml(c.name)}</span>
+                  <span class="tweet-reply-handle">@${escapeHtml((c.handle || '').replace(/^@/,''))}</span>
+                  <span class="tweet-reply-more">•••</span>
+                </div>
+                <div class="tweet-reply-text">${escapeHtml(c.text)}</div>
+                <div class="tweet-reply-icons"><span>💬</span><span>🔁</span><span>🤍</span><span>📊</span><span>🔖</span><span>📤</span></div>
+              </div>
+            </div>
+          </div>
+        `).join('')
+      : '';
+
+    card.innerHTML = `
+      <div class="tweet-detail-top">
+        <div class="tweet-detail-header">
+          <div class="tweet-detail-avatar">${avatarHtml}</div>
+          <div class="tweet-detail-names">
+            <div class="tweet-detail-name-row">
+              <span>${escapeHtml(name)}</span>
+              ${verified ? '<span class="tweet-verified">✔️</span>' : ''}
+              ${isPrivate ? '<span class="tweet-lock">🔒</span>' : ''}
+            </div>
+            <div class="tweet-detail-handle">@${escapeHtml(handle.replace(/^@/,''))}</div>
+          </div>
+        </div>
+        <div class="tweet-xcom">𝕏<span>.com</span></div>
+      </div>
+      <div class="tweet-detail-text">${escapeHtml(t.text)}</div>
+      ${t.image ? `<div class="tweet-detail-image"><img src="${t.image}"></div>` : ''}
+      <div class="tweet-detail-time">${escapeHtml(t.time)}</div>
+      <div class="tweet-detail-icons">
+        <span>💬 ${escapeHtml(t.replies)}</span>
+        <span>🔁</span>
+        <span>🤍 ${escapeHtml(t.likes)}</span>
+        <span>🔖</span>
+        <span>📤</span>
+      </div>
+    `;
+
+    feed.appendChild(card);
+    if(repliesHtml){
+      const repliesWrap = document.createElement('div');
+      repliesWrap.innerHTML = repliesHtml;
+      while(repliesWrap.firstChild) feed.appendChild(repliesWrap.firstChild);
+    }
+  });
+
+  document.getElementById('twCount').textContent = tweets.length;
+  const listEl = document.getElementById('twList');
+  if(tweets.length === 0){
+    listEl.innerHTML = '<div class="empty-hint">No posts yet</div>';
+  } else {
+    listEl.innerHTML = '';
+    tweets.forEach((t, idx) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <span class="txt">${escapeHtml(t.text)}${t.comments && t.comments.length ? ` (${t.comments.length} comment${t.comments.length > 1 ? 's' : ''})` : ''}</span>
+        <button class="del" onclick="deleteTweet(${idx})">✕</button>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+
+  // keep the comment-target dropdown in sync with the current thread
+  const targetSelect = document.getElementById('twCommentTarget');
+  const prevValue = targetSelect.value;
+  targetSelect.innerHTML = tweets.map((t, idx) => {
+    const preview = t.text.length > 30 ? t.text.slice(0, 30) + '…' : t.text;
+    return `<option value="${idx}">${escapeHtml((idx + 1) + '. ' + preview)}</option>`;
+  }).join('');
+  if(tweets.length === 0){
+    targetSelect.innerHTML = '<option value="">Add a post first</option>';
+  } else if([...targetSelect.options].some(o => o.value === prevValue)){
+    targetSelect.value = prevValue;
+  }
+}
+
+function downloadTweet(){
+  const frame = document.querySelector('#tab-tweet .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    triggerImageDownload(canvas.toDataURL('image/png'), 'x-thread.png');
+  });
+}
+
+/* ===================== DMs ===================== */
+let dmAvatarSrc = null;
+let dmSender = 'me';
+let dmMessages = [
+  { sender: 'them', text: "okay but did you see the news today" },
+  { sender: 'me', text: "unfortunately yes" }
+];
+
+function setDmSender(s){
+  dmSender = s;
+  document.getElementById('dm-btn-me').classList.toggle('active-me', s==='me');
+  document.getElementById('dm-btn-them').classList.toggle('active-them', s==='them');
+}
+
+function handleDmAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { dmAvatarSrc = e.target.result; renderDms(); };
+  reader.readAsDataURL(file);
+}
+
+function addDmMessage(){
+  const ta = document.getElementById('dmMsgText');
+  const text = ta.value.trim();
+  if(!text) return;
+  dmMessages.push({ sender: dmSender, text });
+  ta.value = '';
+  renderDms();
+}
+
+function deleteDmMessage(idx){
+  dmMessages.splice(idx, 1);
+  renderDms();
+}
+
+function renderDms(){
+  const name = document.getElementById('dmName').value || 'username';
+  document.getElementById('dmNameOut').textContent = name;
+  document.getElementById('dmStatusOut').textContent = document.getElementById('dmStatus').value;
+  document.getElementById('dmsScreen').classList.toggle('dark-mode', document.getElementById('dmDarkMode').checked);
+
+  const avatarEl = document.getElementById('dmAvatarOut');
+  avatarEl.innerHTML = dmAvatarSrc ? `<img src="${dmAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
+
+  const area = document.getElementById('dmMessagesArea');
+  area.innerHTML = '';
+  dmMessages.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'tw-dm-row ' + m.sender;
+    const bubble = document.createElement('div');
+    bubble.className = 'tw-dm-bubble ' + m.sender;
+    bubble.textContent = m.text;
+    row.appendChild(bubble);
+    area.appendChild(row);
+  });
+
+  document.getElementById('dmMsgCount').textContent = dmMessages.length;
+  const listEl = document.getElementById('dmMsgList');
+  if(dmMessages.length === 0){
+    listEl.innerHTML = '<div class="empty-hint">No messages yet</div>';
+  } else {
+    listEl.innerHTML = '';
+    dmMessages.forEach((m, idx) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <span class="tag ${m.sender}">${m.sender === 'me' ? 'ME' : 'THEM'}</span>
+        <span class="txt">${escapeHtml(m.text)}</span>
+        <button class="del" onclick="deleteDmMessage(${idx})">✕</button>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+}
+
+function downloadDms(){
+  const frame = document.querySelector('#tab-dms .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    triggerImageDownload(canvas.toDataURL('image/png'), 'x-dm.png');
+  });
+}
+
+/* ===================== NOTIFICATIONS ===================== */
+let notifDraftAvatarSrc = null;
+let notifs = [];
+
+const NOTIF_ICONS = { like: '❤️', retweet: '🔁', reply: '💬', follow: '👤', mention: '@' };
+const NOTIF_VERBS = { like: 'liked your post', retweet: 'retweeted your post', reply: 'replied to your post', follow: 'followed you', mention: 'mentioned you' };
+
+function handleNotifAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { notifDraftAvatarSrc = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function addNotif(){
+  const actor = document.getElementById('notifActor').value.trim();
+  if(!actor) return;
+  const type = document.getElementById('notifType').value;
+  notifs.push({
+    type,
+    actor,
+    time: document.getElementById('notifTime').value || '',
+    avatarSrc: notifDraftAvatarSrc,
+    snippet: document.getElementById('notifSnippet').value.trim()
+  });
+  document.getElementById('notifActor').value = '';
+  document.getElementById('notifSnippet').value = '';
+  document.getElementById('notifAvatarUpload').value = '';
+  notifDraftAvatarSrc = null;
+  renderNotifs();
+}
+
+function deleteNotif(idx){
+  notifs.splice(idx, 1);
+  renderNotifs();
+}
+
+function renderNotifs(){
+  document.getElementById('notifsScreen').classList.toggle('dark-mode', document.getElementById('notifDarkMode').checked);
+
+  const listOut = document.getElementById('notifListOut');
+  listOut.innerHTML = '';
+  notifs.forEach(n => {
+    const row = document.createElement('div');
+    row.className = 'tw-notif-row';
+    const avatarHtml = n.avatarSrc ? `<img src="${n.avatarSrc}">` : (n.actor.trim().charAt(0).toUpperCase() || '?');
+    row.innerHTML = `
+      <div class="tw-notif-icon">${NOTIF_ICONS[n.type] || '🔔'}</div>
+      <div class="tw-notif-body">
+        <div class="tw-notif-avatar">${avatarHtml}</div>
+        <div class="tw-notif-text"><b>${escapeHtml(n.actor)}</b> ${escapeHtml(NOTIF_VERBS[n.type] || '')}</div>
+        ${n.snippet ? `<div class="tw-notif-snippet">${escapeHtml(n.snippet)}</div>` : ''}
+      </div>
+      <div class="tw-notif-time">${escapeHtml(n.time)}</div>
+    `;
+    listOut.appendChild(row);
+  });
+
+  document.getElementById('notifCount').textContent = notifs.length;
+  const listEl = document.getElementById('notifList');
+  if(notifs.length === 0){
+    listEl.innerHTML = '<div class="empty-hint">No notifications yet</div>';
+  } else {
+    listEl.innerHTML = '';
+    notifs.forEach((n, idx) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <span class="txt">${NOTIF_ICONS[n.type] || ''} ${escapeHtml(n.actor)} — ${escapeHtml(NOTIF_VERBS[n.type] || '')}</span>
+        <button class="del" onclick="deleteNotif(${idx})">✕</button>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+}
+
+function downloadNotifs(){
+  const frame = document.querySelector('#tab-notifs .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    triggerImageDownload(canvas.toDataURL('image/png'), 'x-notifications.png');
+  });
+}
+
+/* ===================== INIT ===================== */
+renderProfile();
+
+tweets = [
+  { text: "example", time: '00:51 · 8/20/26', image: null, likes: '', replies: '1', comments: [
+    { name: 'chrissy', handle: 'chrissybug_', avatarSrc: null, text: "adding example" }
+  ] }
+];
+renderTweet();
+
+renderDms();
+
+notifs = [
+  { type: 'like', actor: 'MJ Watson', time: '2m', avatarSrc: null, snippet: 'okay so hear me out' },
+  { type: 'follow', actor: 'Ned Leeds', time: '1h', avatarSrc: null, snippet: '' }
+];
+renderNotifs();
+
+/* ===================== MOBILE OVERRIDES (last, so they win the cascade) ===================== */
+</script>
+
+</body>
+</html>
