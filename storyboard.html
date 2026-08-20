@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipts — Storyboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161c;
+    --panel: #1b1e26;
+    --panel-2: #21242e;
+    --line: #2c303c;
+    --ink: #e9e9ee;
+    --ink-dim: #9397a6;
+    --accent: #f5a623;
+    --accent-dim: #b97e1d;
+    --danger: #e0654f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(245,166,35,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(43,138,255,0.05), transparent 40%);
+    color: var(--ink);
+    font-family: 'Proxima Nova', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 22px 32px; border-bottom: 1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand-mark{
+    font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:11px; letter-spacing:0.14em;
+    color: var(--accent); border:1px solid var(--accent-dim); padding:3px 7px; border-radius:4px;
+  }
+  .brand-name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; }
+  .topbar-right{ display:flex; align-items:center; gap:16px; }
+  .brand-sub{ font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:0.03em; }
+  .nav-link{
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-dim); text-decoration:none;
+    border: 1px solid var(--line); padding: 6px 12px; border-radius: 6px;
+  }
+  .nav-link:hover{ color: var(--ink); border-color: var(--accent-dim); }
+
+  .main-layout{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap: 28px;
+    padding: 28px 32px 60px;
+    align-items:start;
+  }
+  @media (max-width: 880px){ .main-layout{ grid-template-columns: 1fr; } }
+
+  .panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: sticky; top: 28px; }
+  .section-label{
+    font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 10.5px; letter-spacing: 0.12em;
+    color: var(--ink-dim); text-transform: uppercase; margin: 0 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after{ content:''; flex:1; height:1px; background: var(--line); }
+  .field{ margin-bottom: 14px; }
+  .field label{ display:block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+  .field textarea{
+    width:100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    color: var(--ink); padding: 9px 11px; font-size: 14px; font-family: inherit; resize: vertical;
+  }
+  .btn{ font-family: inherit; font-size: 13px; font-weight:600; padding: 9px 16px; border-radius: 7px; border: none; cursor: pointer; }
+  .btn-accent{ background: var(--accent); color: #1a1204; width:100%; padding:12px; font-size:14px; }
+  .btn-accent:hover{ background:#ffb63d; }
+  .btn-outline{
+    background:none; border:1px solid var(--line); color: var(--ink-dim); width:100%; padding:10px; font-size:13px; margin-top:8px;
+  }
+  .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
+  .btn-danger-outline{
+    background:none; border:1px solid rgba(224,101,79,0.5); color: var(--danger); width:100%; padding:10px; font-size:13px; margin-top:8px;
+  }
+  .btn-danger-outline:hover{ background: rgba(224,101,79,0.1); }
+  .hint{ font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--ink-dim); line-height:1.5; }
+  .panel-count{ font-size:13px; color: var(--ink-dim); margin: 0 0 14px; }
+  .panel-count b{ color: var(--ink); }
+
+  /* ===== slideshow ===== */
+  .slideshow-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+  .board-empty{
+    border: 1.5px dashed var(--line);
+    border-radius: 14px;
+    padding: 60px 24px;
+    text-align:center;
+    color: var(--ink-dim);
+    font-size: 13.5px;
+    line-height:1.6;
+    width: 420px;
+    max-width:100%;
+  }
+  .slide-main{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    width:100%;
+    justify-content:center;
+  }
+  .nav-arrow{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    font-size:20px;
+    cursor:pointer;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .nav-arrow:hover{ border-color: var(--accent-dim); color: var(--accent); }
+  .nav-arrow:disabled{ opacity:0.3; cursor:default; }
+  .slide-stage{
+    width: 380px;
+    max-width: 100%;
+    min-height: 300px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .panel-card{
+    width:100%;
+    background:#fff;
+    border-radius: 14px;
+    overflow:hidden;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.45);
+  }
+  .panel-card img{ width:100%; display:block; }
+  .panel-source-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    color: var(--ink-dim);
+    margin-bottom:8px;
+    text-align:center;
+  }
+  .caption-card{
+    width:100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 30px 24px;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.45);
+  }
+  .caption-card textarea{
+    width:100%;
+    min-height: 90px;
+    background:none;
+    border:none;
+    outline:none;
+    resize:vertical;
+    color: var(--ink);
+    font-family:'Caveat', cursive;
+    font-size:26px;
+    text-align:center;
+    line-height:1.4;
+  }
+  .slide-counter{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color: var(--ink-dim);
+  }
+  .slide-controls{
+    display:flex;
+    gap:10px;
+  }
+  .slide-controls button{
+    font-family: inherit;
+    font-size:12.5px;
+    padding: 8px 14px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink-dim);
+    cursor:pointer;
+  }
+  .slide-controls button:hover{ color: var(--ink); border-color: var(--accent-dim); }
+  .slide-controls button.del-btn:hover{ color: var(--danger); border-color: var(--danger); }
+
+  .thumb-strip{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    max-width: 100%;
+    padding: 4px 2px 10px;
+  }
+  .thumb{
+    width:46px;
+    height:64px;
+    border-radius:6px;
+    overflow:hidden;
+    flex-shrink:0;
+    cursor:pointer;
+    border: 2px solid transparent;
+    background: var(--panel-2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .thumb.active{ border-color: var(--accent); }
+  .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb.caption-thumb{
+    font-family:'Caveat', cursive;
+    font-size:11px;
+    color: var(--ink-dim);
+    text-align:center;
+    padding:4px;
+    line-height:1.2;
+    overflow:hidden;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-mark">RCPT</span>
+    <span class="brand-name">Receipts</span>
+  </div>
+  <div class="topbar-right">
+    <span class="brand-sub">arrange your panels into a scene</span>
+    <a class="nav-link" href="index.html">Main tools</a>
+    <a class="nav-link" href="instagram.html">Instagram tools</a>
+  </div>
+</div>
+
+<div class="main-layout">
+  <div class="panel">
+    <p class="section-label">Storyboard</p>
+    <p class="panel-count"><b id="panelCount">0</b> panels</p>
+    <p class="hint">
+      Build screenshots on the Main or Instagram tools pages, then hit "+ Add to Storyboard" on each one. They'll show up here as a slideshow — flip through with the arrows, add caption cards between them, and export the whole scene as one image.
+    </p>
+
+    <p class="section-label" style="margin-top:18px;">Add a caption card</p>
+    <div class="field">
+      <textarea id="newCaptionText" rows="2" placeholder="e.g. three days later..."></textarea>
+    </div>
+    <button class="btn btn-outline" onclick="addCaptionCard()">+ Add caption card</button>
+
+    <div class="download-bar" style="margin-top:20px;">
+      <button class="btn btn-accent" onclick="downloadStoryboard()">Download Storyboard PNG</button>
+      <button class="btn btn-danger-outline" onclick="clearBoard()">Clear board</button>
+    </div>
+
+    <p class="hint" style="margin-top:16px;">
+      Panels are saved in this browser via local storage, shared across pages served from the same location. If you're opening these files by double-clicking them instead of hosting them (e.g. on GitHub Pages), some browsers block that and panels won't carry over between pages.
+    </p>
+  </div>
+
+  <div class="slideshow-wrap" id="slideshowWrap"></div>
+</div>
+
+<script>
+const STORYBOARD_KEY = 'receipts_storyboard_v1';
+let panels = [];
+let currentIndex = 0;
+
+function loadPanels(){
+  try {
+    panels = JSON.parse(localStorage.getItem(STORYBOARD_KEY) || '[]');
+  } catch(e){
+    panels = [];
+  }
+}
+
+function savePanels(){
+  try {
+    localStorage.setItem(STORYBOARD_KEY, JSON.stringify(panels));
+  } catch(e){
+    alert('Could not save — storage may be full. Try downloading the board and clearing some panels.');
+  }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function clampIndex(){
+  if(currentIndex < 0) currentIndex = 0;
+  if(currentIndex > panels.length - 1) currentIndex = panels.length - 1;
+}
+
+function addCaptionCard(){
+  const ta = document.getElementById('newCaptionText');
+  const text = ta.value.trim();
+  if(!text) return;
+  panels.push({ id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), type: 'caption', text });
+  ta.value = '';
+  savePanels();
+  currentIndex = panels.length - 1;
+  render();
+}
+
+function updateCaptionText(idx, value){
+  panels[idx].text = value;
+  savePanels();
+}
+
+function movePanel(dir){
+  const newIdx = currentIndex + dir;
+  if(newIdx < 0 || newIdx >= panels.length) return;
+  const tmp = panels[currentIndex];
+  panels[currentIndex] = panels[newIdx];
+  panels[newIdx] = tmp;
+  currentIndex = newIdx;
+  savePanels();
+  render();
+}
+
+function deleteCurrentPanel(){
+  panels.splice(currentIndex, 1);
+  clampIndex();
+  savePanels();
+  render();
+}
+
+function goToSlide(idx){
+  currentIndex = idx;
+  render();
+}
+
+function prevSlide(){
+  if(currentIndex > 0){ currentIndex--; render(); }
+}
+
+function nextSlide(){
+  if(currentIndex < panels.length - 1){ currentIndex++; render(); }
+}
+
+function clearBoard(){
+  if(panels.length === 0) return;
+  if(!confirm('Clear all panels from the storyboard? This can\'t be undone.')) return;
+  panels = [];
+  currentIndex = 0;
+  savePanels();
+  render();
+}
+
+function render(){
+  document.getElementById('panelCount').textContent = panels.length;
+  const wrap = document.getElementById('slideshowWrap');
+  wrap.innerHTML = '';
+
+  if(panels.length === 0){
+    wrap.innerHTML = '<div class="board-empty">No panels yet.<br>Go add some from the Main or Instagram tools pages, or add a caption card on the left.</div>';
+    return;
+  }
+
+  clampIndex();
+  const p = panels[currentIndex];
+
+  // main slide area with arrows
+  const slideMain = document.createElement('div');
+  slideMain.className = 'slide-main';
+
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'nav-arrow';
+  prevBtn.textContent = '‹';
+  prevBtn.disabled = currentIndex === 0;
+  prevBtn.onclick = prevSlide;
+
+  const stage = document.createElement('div');
+  stage.className = 'slide-stage';
+  if(p.type === 'image'){
+    stage.innerHTML = `
+      <div>
+        <div class="panel-source-tag">${escapeHtml(p.sourceLabel || '')}</div>
+        <div class="panel-card"><img src="${p.img}" alt=""></div>
+      </div>
+    `;
+  } else {
+    const captionCard = document.createElement('div');
+    captionCard.className = 'caption-card';
+    const ta = document.createElement('textarea');
+    ta.value = p.text;
+    ta.oninput = () => updateCaptionText(currentIndex, ta.value);
+    captionCard.appendChild(ta);
+    stage.appendChild(captionCard);
+  }
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'nav-arrow';
+  nextBtn.textContent = '›';
+  nextBtn.disabled = currentIndex === panels.length - 1;
+  nextBtn.onclick = nextSlide;
+
+  slideMain.appendChild(prevBtn);
+  slideMain.appendChild(stage);
+  slideMain.appendChild(nextBtn);
+  wrap.appendChild(slideMain);
+
+  // counter
+  const counter = document.createElement('div');
+  counter.className = 'slide-counter';
+  counter.textContent = (currentIndex + 1) + ' / ' + panels.length;
+  wrap.appendChild(counter);
+
+  // controls
+  const controls = document.createElement('div');
+  controls.className = 'slide-controls';
+  controls.innerHTML = `
+    <button onclick="movePanel(-1)" ${currentIndex === 0 ? 'disabled' : ''}>← Move earlier</button>
+    <button onclick="movePanel(1)" ${currentIndex === panels.length - 1 ? 'disabled' : ''}>Move later →</button>
+    <button class="del-btn" onclick="deleteCurrentPanel()">Delete slide</button>
+  `;
+  wrap.appendChild(controls);
+
+  // thumbnail strip
+  const strip = document.createElement('div');
+  strip.className = 'thumb-strip';
+  panels.forEach((tp, idx) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb' + (idx === currentIndex ? ' active' : '') + (tp.type === 'caption' ? ' caption-thumb' : '');
+    thumb.onclick = () => goToSlide(idx);
+    if(tp.type === 'image'){
+      thumb.innerHTML = `<img src="${tp.img}" alt="">`;
+    } else {
+      thumb.textContent = tp.text.slice(0, 24);
+    }
+    strip.appendChild(thumb);
+  });
+  wrap.appendChild(strip);
+}
+
+function buildExportContainer(){
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '0';
+  container.style.width = '420px';
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '14px';
+  container.style.padding = '24px';
+  container.style.background = '#0e0f13';
+  container.style.borderRadius = '16px';
+  panels.forEach(p => {
+    if(p.type === 'image'){
+      const card = document.createElement('div');
+      card.className = 'panel-card';
+      card.innerHTML = `<img src="${p.img}" alt="">`;
+      container.appendChild(card);
+    } else {
+      const card = document.createElement('div');
+      card.className = 'caption-card';
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.justifyContent = 'center';
+      card.style.fontFamily = "'Caveat', cursive";
+      card.style.fontSize = '26px';
+      card.style.color = '#e9e9ee';
+      card.style.textAlign = 'center';
+      card.textContent = p.text;
+      container.appendChild(card);
+    }
+  });
+  document.body.appendChild(container);
+  return container;
+}
+
+function downloadStoryboard(){
+  if(panels.length === 0) return;
+  const container = buildExportContainer();
+  html2canvas(container, { scale: 2, backgroundColor: '#0e0f13' }).then(canvas => {
+    document.body.removeChild(container);
+    const link = document.createElement('a');
+    link.download = 'storyboard.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(() => {
+    if(container.parentNode) document.body.removeChild(container);
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if(panels.length === 0) return;
+  if(e.key === 'ArrowLeft') prevSlide();
+  if(e.key === 'ArrowRight') nextSlide();
+});
+
+loadPanels();
+render();
+</script>
+
+</body>
+</html>

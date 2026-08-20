@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipts — Instagram</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161c;
+    --panel: #1b1e26;
+    --panel-2: #21242e;
+    --line: #2c303c;
+    --ink: #e9e9ee;
+    --ink-dim: #9397a6;
+    --accent: #f5a623;
+    --accent-dim: #b97e1d;
+    --danger: #e0654f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(245,166,35,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(43,138,255,0.05), transparent 40%);
+    color: var(--ink);
+    font-family: 'Proxima Nova', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand-mark{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color: var(--accent);
+    border:1px solid var(--accent-dim);
+    padding:3px 7px;
+    border-radius:4px;
+  }
+  .brand-name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; }
+  .topbar-right{ display:flex; align-items:center; gap:16px; }
+  .brand-sub{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size:11.5px;
+    color: var(--ink-dim);
+    letter-spacing:0.03em;
+  }
+  .nav-link{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    text-decoration:none;
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+  .nav-link:hover{ color: var(--ink); border-color: var(--accent-dim); }
+
+  .tabbar{ display:flex; gap:4px; padding: 14px 32px 0; flex-wrap: wrap; }
+  .tab-btn{
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight:600;
+    padding: 9px 16px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--line);
+    border-bottom: none;
+    background: var(--bg);
+    color: var(--ink-dim);
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+    white-space: nowrap;
+  }
+  .tab-btn.active{ background: var(--panel); color: var(--ink); border-bottom: 1px solid var(--panel); }
+  .tabbar-line{ border-bottom: 1px solid var(--line); margin: 0 32px; }
+
+  .layout{
+    display:grid;
+    grid-template-columns: 400px 1fr;
+    gap: 28px;
+    padding: 28px 32px 60px;
+  }
+  @media (max-width: 880px){ .layout{ grid-template-columns: 1fr; } }
+
+  .panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .section-label{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin: 0 0 10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after{ content:''; flex:1; height:1px; background: var(--line); }
+  .field{ margin-bottom: 14px; }
+  .field label{ display:block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+  .field input[type=text], .field textarea{
+    width:100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    padding: 9px 11px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus{ outline: none; border-color: var(--accent-dim); }
+  .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+
+  .style-toggle{ display:flex; gap:8px; }
+  .style-toggle button{
+    flex:1; padding:9px; border-radius:8px; border:1px solid var(--line);
+    background: var(--panel-2); color: var(--ink-dim); font-size:13px; cursor:pointer; font-family:inherit;
+  }
+  .style-toggle button.active{ border-color: var(--accent); color: var(--ink); background: rgba(245,166,35,0.08); }
+
+  .sender-toggle{ display:flex; gap:8px; margin-bottom:10px; }
+  .sender-toggle button{
+    flex:1; padding:7px; border-radius:7px; border:1px solid var(--line);
+    background: var(--panel); color: var(--ink-dim); font-size:12.5px; cursor:pointer; font-family:inherit;
+  }
+  .sender-toggle button.active-me{ border-color:#c13584; color:#ffd3ea; background: rgba(193,53,132,0.15); }
+  .sender-toggle button.active-them{ border-color:#565a66; color: var(--ink); background: rgba(255,255,255,0.05); }
+
+  .composer{ background: var(--panel-2); border:1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+  .composer textarea{
+    width:100%; background: var(--panel); border:1px solid var(--line); border-radius:7px;
+    color:var(--ink); padding:9px 10px; font-size:13.5px; font-family:inherit; min-height:56px; resize:vertical;
+  }
+  .composer-footer{ display:flex; justify-content:flex-end; margin-top:8px; }
+  .btn{
+    font-family: inherit; font-size: 13px; font-weight:600; padding: 8px 16px;
+    border-radius: 7px; border: none; cursor: pointer;
+  }
+  .btn-accent{ background: var(--accent); color: #1a1204; }
+  .btn-accent:hover{ background:#ffb63d; }
+  .btn-outline{
+    background: none; border: 1px solid var(--line); color: var(--ink-dim);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
+
+  .msg-list{ display:flex; flex-direction:column; gap:7px; max-height: 280px; overflow-y:auto; padding-right:2px; }
+  .msg-row{
+    display:flex; align-items:flex-start; gap:8px; background: var(--panel-2);
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+  }
+  .msg-row .tag{ font-family:'JetBrains Mono', monospace; font-size:9.5px; padding:2px 5px; border-radius:4px; white-space:nowrap; margin-top:2px; }
+  .tag.me{ background: rgba(193,53,132,0.2); color:#ff9ecb; }
+  .tag.them{ background: rgba(255,255,255,0.09); color: var(--ink-dim); }
+  .msg-row .txt{ flex:1; font-size:12.5px; color: var(--ink); line-height:1.4; word-break: break-word; }
+  .msg-row .del{ background:none; border:none; color: var(--danger); cursor:pointer; font-size:13px; padding:2px 4px; flex-shrink:0; }
+  .empty-hint{
+    font-size:12.5px; color: var(--ink-dim); text-align:center; padding: 18px 8px;
+    border: 1px dashed var(--line); border-radius:8px;
+  }
+  .download-bar{ margin-top:18px; }
+  .btn-download{ width:100%; background: var(--ink); color: #14161c; padding: 12px; font-size:14px; border-radius:9px; }
+  .btn-download:hover{ background:#fff; }
+  .btn-storyboard{
+    width:100%; margin-top:8px; padding:10px; font-size:13px; border-radius:9px;
+    background:none; border:1px solid var(--accent-dim); color: var(--accent);
+  }
+  .btn-storyboard:hover{ background: rgba(245,166,35,0.08); }
+  .btn-storyboard:disabled{ opacity:0.6; cursor:default; }
+
+  .upload-drop{
+    border: 1.5px dashed var(--line); border-radius: 10px; padding: 16px 12px; text-align:center;
+    cursor:pointer; color: var(--ink-dim); font-size: 13px; display:block;
+  }
+  .upload-drop:hover{ border-color: var(--accent-dim); color: var(--ink); }
+  .thumb-grid{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .thumb-cell{ position:relative; width:52px; height:52px; border-radius:6px; overflow:hidden; }
+  .thumb-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb-cell button{
+    position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.6); color:#fff; border:none;
+    border-radius:50%; width:16px; height:16px; font-size:10px; cursor:pointer; line-height:1;
+  }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; font-size:13px; color: var(--ink); cursor:pointer; }
+  .checkbox-row input{ width:15px; height:15px; accent-color: var(--accent); cursor:pointer; }
+
+  .preview-wrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .phone-frame{
+    width: 340px; background: #000; border-radius: 46px; padding: 14px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 0 1px #050505;
+  }
+  .phone-screen{
+    background: #fff; border-radius: 34px; overflow:hidden; display:flex; flex-direction:column; height: 640px;
+  }
+  .status-bar{
+    display:flex; justify-content:space-between; align-items:center; padding: 8px 22px 2px;
+    font-size:13px; font-weight:600; color:#000;
+  }
+  .hint{ font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--ink-dim); text-align:center; max-width:340px; }
+
+  /* ============ PROFILE ============ */
+  .ig-topbar{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding: 6px 14px 10px; font-weight:700; font-size:15px; color:#000; position:relative;
+  }
+  .ig-topbar .lock-ic{ font-size:12px; }
+  .ig-profile-body{ padding: 8px 16px; flex:1; overflow-y:auto; }
+  .ig-profile-header{ display:flex; align-items:center; gap:20px; }
+  .ig-avatar-lg{
+    width:80px; height:80px; border-radius:50%; flex-shrink:0; overflow:hidden;
+    background: linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:26px;
+  }
+  .ig-avatar-lg img{ width:100%; height:100%; object-fit:cover; }
+  .ig-stats{ flex:1; display:flex; justify-content:space-around; text-align:center; }
+  .ig-stat-num{ font-weight:700; font-size:16px; color:#000; }
+  .ig-stat-label{ font-size:12px; color:#444; }
+  .ig-name-row{ display:flex; align-items:center; gap:5px; margin-top:12px; font-weight:700; font-size:13.5px; color:#000; }
+  .ig-verified{ color:#3897f0; font-size:13px; }
+  .ig-bio{ font-size:13px; color:#000; margin-top:4px; white-space:pre-wrap; line-height:1.4; }
+  .ig-edit-btn{
+    margin-top:12px; width:100%; text-align:center; background:#efefef; border-radius:8px;
+    padding:7px; font-size:13px; font-weight:600; color:#000;
+  }
+  .ig-tabicons{ display:flex; justify-content:space-around; border-top:1px solid #efefef; margin-top:14px; padding-top:6px; }
+  .ig-tabicons span{ font-size:18px; opacity:0.35; padding:8px; }
+  .ig-tabicons span.sel{ opacity:1; border-top:1.5px solid #000; margin-top:-7px; padding-top:14px; }
+  .ig-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:2px; margin-top:4px; }
+  .ig-grid-cell{ aspect-ratio: 1; background:#e8e8e8; overflow:hidden; }
+  .ig-grid-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* ============ CHATS ============ */
+  .ig-chat-header{
+    display:flex; align-items:center; gap:10px; padding:8px 12px 12px; border-bottom:1px solid #efefef; color:#000;
+  }
+  .ig-chat-avatar{
+    width:34px; height:34px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background: linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px;
+  }
+  .ig-chat-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .ig-chat-name{ font-size:13.5px; font-weight:700; }
+  .ig-chat-status{ font-size:11px; color:#8a8a8e; }
+  .ig-messages{ flex:1; overflow-y:auto; padding:12px 12px 6px; display:flex; flex-direction:column; gap:5px; }
+  .ig-bubble-row{ display:flex; }
+  .ig-bubble-row.me{ justify-content:flex-end; }
+  .ig-bubble-row.them{ justify-content:flex-start; }
+  .ig-bubble{
+    max-width:72%; padding:9px 14px; font-size:14px; line-height:1.3; word-break:break-word; border-radius:20px;
+  }
+  .ig-bubble.them{ background:#efefef; color:#000; }
+  .ig-bubble.me{ background: #7C4DFF; color:#fff; }
+  .ig-seen{ text-align:right; font-size:10.5px; color:#8a8a8e; padding:2px 14px 8px; }
+  .ig-composer-bar{ display:flex; align-items:center; gap:8px; padding:8px 12px 14px; }
+  .ig-composer-bar .pill{
+    flex:1; height:34px; border-radius:18px; background:#efefef; display:flex; align-items:center;
+    padding-left:14px; font-size:13px; color:#8a8a8e;
+  }
+
+  /* ============ STORIES ============ */
+  .ig-story-screen{
+    height:640px; position:relative; overflow:hidden; background-size:cover; background-position:center;
+    display:flex; flex-direction:column; color:#fff;
+  }
+  .ig-story-screen::before{ content:''; position:absolute; inset:0; background: rgba(0,0,0,0.15); }
+  .ig-story-screen > *{ position:relative; z-index:1; }
+  .ig-story-segments{ display:flex; gap:4px; padding: 10px 10px 0; }
+  .ig-story-segments .seg{ flex:1; height:2.5px; background: rgba(255,255,255,0.35); border-radius:2px; overflow:hidden; }
+  .ig-story-segments .seg.filled::after{ content:''; display:block; height:100%; width:100%; background:#fff; }
+  .ig-story-header{ display:flex; align-items:center; gap:8px; padding: 10px 12px; }
+  .ig-story-avatar{
+    width:30px; height:30px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background: linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;
+  }
+  .ig-story-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .ig-story-uname{ font-size:13.5px; font-weight:600; }
+  .ig-story-time{ font-size:12px; opacity:0.8; }
+  .ig-story-caption{
+    position:absolute; left:0; right:0; bottom:110px; text-align:center; padding:0 24px;
+    font-size:20px; font-weight:700; text-shadow: 0 2px 8px rgba(0,0,0,0.5); white-space:pre-wrap;
+  }
+  .ig-story-reply-bar{
+    margin-top:auto; display:flex; align-items:center; gap:10px; padding: 10px 14px 26px;
+  }
+  .ig-story-reply-bar .pill{
+    flex:1; height:38px; border-radius:20px; border:1px solid rgba(255,255,255,0.6);
+    display:flex; align-items:center; padding-left:14px; font-size:13px; color: rgba(255,255,255,0.85);
+  }
+
+  /* ============ NOTES ============ */
+  .ig-notes-header{ padding: 10px 14px; font-size:16px; font-weight:700; color:#000; border-bottom:1px solid #efefef; }
+  .ig-notes-row{ display:flex; gap:16px; padding: 14px 14px 10px; overflow-x:auto; }
+  .ig-note-col{ display:flex; flex-direction:column; align-items:center; gap:6px; width:58px; flex-shrink:0; }
+  .ig-note-bubble{
+    background:#efefef; border-radius: 16px 16px 16px 4px; padding:6px 10px; font-size:11px;
+    color:#000; max-width:100px; text-align:center; line-height:1.25; margin-bottom:-4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .ig-note-avatar-wrap{
+    width:56px; height:56px; border-radius:50%; padding:2.5px;
+    background: linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);
+  }
+  .ig-note-avatar{
+    width:100%; height:100%; border-radius:50%; overflow:hidden; border:2px solid #fff;
+    background:#d0d0d0; display:flex; align-items:center; justify-content:center; font-weight:700; color:#666;
+  }
+  .ig-note-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .ig-note-uname{ font-size:11px; color:#000; text-align:center; }
+  .ig-note-filler .ig-note-avatar-wrap{ background:#dcdcdc; padding:0; }
+  .ig-note-filler .ig-note-avatar{ border-color:#fff; }
+
+  /* ============ DARK MODE ============ */
+  .phone-screen.dark-mode{ background:#000; }
+  .phone-screen.dark-mode .status-bar{ color:#fff; }
+
+  /* profile */
+  .phone-screen.dark-mode .ig-topbar{ color:#fff; }
+  .phone-screen.dark-mode .ig-stat-num{ color:#fff; }
+  .phone-screen.dark-mode .ig-stat-label{ color:#a8a8a8; }
+  .phone-screen.dark-mode .ig-name-row{ color:#fff; }
+  .phone-screen.dark-mode .ig-bio{ color:#e0e0e0; }
+  .phone-screen.dark-mode .ig-edit-btn{ background:#262626; color:#fff; }
+  .phone-screen.dark-mode .ig-tabicons{ border-top-color:#262626; }
+  .phone-screen.dark-mode .ig-tabicons span.sel{ border-top-color:#fff; }
+  .phone-screen.dark-mode .ig-grid-cell{ background:#1a1a1a; }
+
+  /* chats */
+  .phone-screen.dark-mode .ig-chat-header{ border-bottom-color:#262626; color:#fff; }
+  .phone-screen.dark-mode .ig-chat-status{ color:#a8a8a8; }
+  .phone-screen.dark-mode .ig-bubble.them{ background:#262626; color:#fff; }
+  .phone-screen.dark-mode .ig-seen{ color:#a8a8a8; }
+  .phone-screen.dark-mode .ig-composer-bar .pill{ background:#262626; color:#a8a8a8; }
+
+  /* notes */
+  .phone-screen.dark-mode .ig-notes-header{ color:#fff; border-bottom-color:#262626; }
+  .phone-screen.dark-mode .ig-note-bubble{ background:#262626; color:#fff; box-shadow:none; }
+  .phone-screen.dark-mode .ig-note-uname{ color:#e0e0e0; }
+  .phone-screen.dark-mode .ig-note-avatar{ border-color:#000; background:#333; color:#ccc; }
+  .phone-screen.dark-mode .ig-note-filler .ig-note-avatar-wrap{ background:#333; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-mark">RCPT</span>
+    <span class="brand-name">Receipts</span>
+  </div>
+  <div class="topbar-right">
+    <span class="brand-sub">instagram-flavored props</span>
+    <a class="nav-link" href="index.html">← Back to main tools</a>
+    <a class="nav-link" href="storyboard.html">Storyboard →</a>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active" id="tabbtn-profile" onclick="switchTab('profile')">Profile</button>
+  <button class="tab-btn" id="tabbtn-chats" onclick="switchTab('chats')">Chats</button>
+  <button class="tab-btn" id="tabbtn-stories" onclick="switchTab('stories')">Stories</button>
+  <button class="tab-btn" id="tabbtn-notes" onclick="switchTab('notes')">Notes</button>
+</div>
+<div class="tabbar-line"></div>
+
+<!-- PROFILE TAB -->
+<div class="layout" id="tab-profile">
+  <div class="panel">
+    <p class="section-label">Account</p>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="pfUsername" value="peter.parker" oninput="renderProfile()">
+    </div>
+    <div class="field">
+      <label>Display name</label>
+      <input type="text" id="pfName" value="Peter Parker" oninput="renderProfile()">
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="pfVerified" onchange="renderProfile()">
+        Verified badge
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="pfDarkMode" onchange="renderProfile()">
+        Dark mode
+      </label>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="pfAvatarUpload">Upload profile photo</label>
+      <input type="file" id="pfAvatarUpload" accept="image/*" style="display:none;" onchange="handlePfAvatarUpload(event)">
+    </div>
+
+    <p class="section-label">Bio</p>
+    <div class="field">
+      <textarea id="pfBio" rows="3" oninput="renderProfile()">friendly neighborhood ~
+queens, ny</textarea>
+    </div>
+
+    <p class="section-label">Stats</p>
+    <div class="row3">
+      <div class="field">
+        <label>Posts</label>
+        <input type="text" id="pfPosts" value="142" oninput="renderProfile()">
+      </div>
+      <div class="field">
+        <label>Followers</label>
+        <input type="text" id="pfFollowers" value="8,392" oninput="renderProfile()">
+      </div>
+      <div class="field">
+        <label>Following</label>
+        <input type="text" id="pfFollowing" value="617" oninput="renderProfile()">
+      </div>
+    </div>
+
+    <p class="section-label">Grid photos</p>
+    <div class="field">
+      <label class="upload-drop" for="pfGridUpload">Add photo to grid</label>
+      <input type="file" id="pfGridUpload" accept="image/*" style="display:none;" onchange="handlePfGridUpload(event)">
+      <div class="thumb-grid" id="pfGridThumbs"></div>
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadProfile()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addProfileToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="profileScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="ig-topbar"><span id="pfTopUsername">peter.parker</span></div>
+        <div class="ig-profile-body">
+          <div class="ig-profile-header">
+            <div class="ig-avatar-lg" id="pfAvatarOut">P</div>
+            <div class="ig-stats">
+              <div><div class="ig-stat-num" id="pfPostsOut">142</div><div class="ig-stat-label">Posts</div></div>
+              <div><div class="ig-stat-num" id="pfFollowersOut">8,392</div><div class="ig-stat-label">Followers</div></div>
+              <div><div class="ig-stat-num" id="pfFollowingOut">617</div><div class="ig-stat-label">Following</div></div>
+            </div>
+          </div>
+          <div class="ig-name-row"><span id="pfNameOut">Peter Parker</span><span class="ig-verified" id="pfVerifiedOut" style="display:none;">✔️</span></div>
+          <div class="ig-bio" id="pfBioOut"></div>
+          <div class="ig-edit-btn">Edit Profile</div>
+          <div class="ig-tabicons"><span class="sel">▦</span><span>▷</span><span>👤</span></div>
+          <div class="ig-grid" id="pfGridOut"></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Add a few grid photos to fill it out — it renders exactly like an IG profile.</p>
+  </div>
+</div>
+
+<!-- CHATS TAB -->
+<div class="layout" id="tab-chats" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Conversation</p>
+    <div class="field">
+      <label>Contact name</label>
+      <input type="text" id="chatName" value="mj.jonesss" oninput="renderChat()">
+    </div>
+    <div class="field">
+      <label>Status text</label>
+      <input type="text" id="chatStatus" value="Active now" oninput="renderChat()">
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="chatAvatarUpload">Upload contact photo</label>
+      <input type="file" id="chatAvatarUpload" accept="image/*" style="display:none;" onchange="handleChatAvatarUpload(event)">
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="chatSeen" checked onchange="renderChat()">
+        Show "Seen" under last message
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="chatDarkMode" onchange="renderChat()">
+        Dark mode
+      </label>
+    </div>
+
+    <p class="section-label">Add message</p>
+    <div class="composer">
+      <div class="sender-toggle">
+        <button id="chat-btn-me" class="active-me" onclick="setChatSender('me')">Me (right)</button>
+        <button id="chat-btn-them" onclick="setChatSender('them')">Them (left)</button>
+      </div>
+      <textarea id="chatMsgText" placeholder="Type the line..."></textarea>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addChatMessage()">Add bubble</button>
+      </div>
+    </div>
+
+    <p class="section-label">Thread (<span id="chatMsgCount">0</span>)</p>
+    <div class="msg-list" id="chatMsgList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadChat()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addChatToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="chatsScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="ig-chat-header">
+          <div class="ig-chat-avatar" id="chatAvatarOut">M</div>
+          <div>
+            <div class="ig-chat-name" id="chatNameOut">mj.jonesss</div>
+            <div class="ig-chat-status" id="chatStatusOut">Active now</div>
+          </div>
+        </div>
+        <div class="ig-messages" id="chatMessagesArea"></div>
+        <div class="ig-seen" id="chatSeenOut">Seen</div>
+        <div class="ig-composer-bar"><div class="pill">Message...</div></div>
+      </div>
+    </div>
+    <p class="hint">Instagram DM styling — gradient bubbles for you, gray for them.</p>
+  </div>
+</div>
+
+<!-- STORIES TAB -->
+<div class="layout" id="tab-stories" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Poster</p>
+    <div class="row2">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="stUsername" value="mj.jonesss" oninput="renderStory()">
+      </div>
+      <div class="field">
+        <label>Time label</label>
+        <input type="text" id="stTime" value="4h" oninput="renderStory()">
+      </div>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="stAvatarUpload">Upload poster's avatar</label>
+      <input type="file" id="stAvatarUpload" accept="image/*" style="display:none;" onchange="handleStAvatarUpload(event)">
+    </div>
+
+    <p class="section-label">Story content</p>
+    <div class="field">
+      <label class="upload-drop" for="stBgUpload">Upload story photo</label>
+      <input type="file" id="stBgUpload" accept="image/*" style="display:none;" onchange="handleStBgUpload(event)">
+    </div>
+    <div class="field">
+      <label>Caption / sticker text (optional)</label>
+      <textarea id="stCaption" rows="2" oninput="renderStory()"></textarea>
+    </div>
+    <div class="field">
+      <label>Number of story segments</label>
+      <input type="text" id="stSegments" value="3" oninput="renderStory()">
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadStory()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addStoryToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="ig-story-screen" id="storyScreen">
+        <div class="ig-story-segments" id="storySegmentsOut"></div>
+        <div class="ig-story-header">
+          <div class="ig-story-avatar" id="stAvatarOut">M</div>
+          <div class="ig-story-uname" id="stUsernameOut">mj.jonesss</div>
+          <div class="ig-story-time" id="stTimeOut">4h</div>
+        </div>
+        <div class="ig-story-caption" id="stCaptionOut"></div>
+        <div class="ig-story-reply-bar"><div class="pill">Send message</div></div>
+      </div>
+    </div>
+    <p class="hint">First segment is shown as active — a good stand-in for "currently viewing".</p>
+  </div>
+</div>
+
+<!-- NOTES TAB -->
+<div class="layout" id="tab-notes" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Display</p>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="notesDarkMode" onchange="renderNotes()">
+        Dark mode
+      </label>
+    </div>
+
+    <p class="section-label">Add a person</p>
+    <div class="composer">
+      <div class="field" style="margin-bottom:8px;">
+        <label>Username</label>
+        <input type="text" id="noteDraftUsername" placeholder="e.g. mj.jonesss">
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label class="upload-drop" for="noteDraftAvatarUpload">Upload their avatar (optional)</label>
+        <input type="file" id="noteDraftAvatarUpload" accept="image/*" style="display:none;" onchange="handleNoteDraftAvatarUpload(event)">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Note text (optional, max ~60 chars)</label>
+        <input type="text" id="noteDraftText" maxlength="60" placeholder="leave blank for no note bubble">
+      </div>
+      <div class="composer-footer">
+        <button class="btn btn-accent" onclick="addNoteEntry()">Add person</button>
+      </div>
+    </div>
+
+    <p class="section-label">People (<span id="noteEntryCount">0</span>)</p>
+    <div class="msg-list" id="noteEntryList"></div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadNotes()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addNotesToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="notesScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="ig-notes-header">Direct</div>
+        <div class="ig-notes-row" id="notesRowOut"></div>
+      </div>
+    </div>
+    <p class="hint">Each person can have their own avatar and note — leave the note blank for a plain avatar.</p>
+  </div>
+</div>
+
+<script>
+function switchTab(tab){
+  const tabs = ['profile','chats','stories','notes'];
+  tabs.forEach(t => {
+    document.getElementById('tab-' + t).style.display = (t === tab) ? 'grid' : 'none';
+    document.getElementById('tabbtn-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ===================== PROFILE ===================== */
+let pfAvatarSrc = null;
+let pfGridPhotos = [];
+
+function handlePfAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { pfAvatarSrc = e.target.result; renderProfile(); };
+  reader.readAsDataURL(file);
+}
+
+function handlePfGridUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    pfGridPhotos.push(e.target.result);
+    event.target.value = '';
+    renderProfile();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePfGridPhoto(idx){
+  pfGridPhotos.splice(idx, 1);
+  renderProfile();
+}
+
+function renderProfile(){
+  const username = document.getElementById('pfUsername').value || 'username';
+  const name = document.getElementById('pfName').value || '';
+  const verified = document.getElementById('pfVerified').checked;
+  const bio = document.getElementById('pfBio').value;
+  document.getElementById('profileScreen').classList.toggle('dark-mode', document.getElementById('pfDarkMode').checked);
+
+  document.getElementById('pfTopUsername').textContent = username;
+  document.getElementById('pfNameOut').textContent = name;
+  document.getElementById('pfVerifiedOut').style.display = verified ? 'inline' : 'none';
+  document.getElementById('pfBioOut').textContent = bio;
+  document.getElementById('pfPostsOut').textContent = document.getElementById('pfPosts').value;
+  document.getElementById('pfFollowersOut').textContent = document.getElementById('pfFollowers').value;
+  document.getElementById('pfFollowingOut').textContent = document.getElementById('pfFollowing').value;
+
+  const avatarEl = document.getElementById('pfAvatarOut');
+  avatarEl.innerHTML = pfAvatarSrc ? `<img src="${pfAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
+
+  const gridEl = document.getElementById('pfGridOut');
+  gridEl.innerHTML = '';
+  pfGridPhotos.forEach(src => {
+    const cell = document.createElement('div');
+    cell.className = 'ig-grid-cell';
+    cell.innerHTML = `<img src="${src}">`;
+    gridEl.appendChild(cell);
+  });
+  if(pfGridPhotos.length === 0){
+    for(let i=0;i<6;i++){
+      const cell = document.createElement('div');
+      cell.className = 'ig-grid-cell';
+      gridEl.appendChild(cell);
+    }
+  }
+
+  const thumbsEl = document.getElementById('pfGridThumbs');
+  thumbsEl.innerHTML = '';
+  pfGridPhotos.forEach((src, idx) => {
+    const cell = document.createElement('div');
+    cell.className = 'thumb-cell';
+    cell.innerHTML = `<img src="${src}"><button onclick="removePfGridPhoto(${idx})">✕</button>`;
+    thumbsEl.appendChild(cell);
+  });
+}
+
+function downloadProfile(){
+  const frame = document.querySelector('#tab-profile .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'instagram-profile.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== CHATS ===================== */
+let chatAvatarSrc = null;
+let chatSender = 'me';
+let chatMessages = [
+  { sender: 'them', text: "okay but did you see the news today" },
+  { sender: 'me', text: "unfortunately yes" }
+];
+
+function setChatSender(s){
+  chatSender = s;
+  document.getElementById('chat-btn-me').classList.toggle('active-me', s==='me');
+  document.getElementById('chat-btn-them').classList.toggle('active-them', s==='them');
+}
+
+function handleChatAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { chatAvatarSrc = e.target.result; renderChat(); };
+  reader.readAsDataURL(file);
+}
+
+function addChatMessage(){
+  const ta = document.getElementById('chatMsgText');
+  const text = ta.value.trim();
+  if(!text) return;
+  chatMessages.push({ sender: chatSender, text });
+  ta.value = '';
+  renderChat();
+}
+
+function deleteChatMessage(idx){
+  chatMessages.splice(idx, 1);
+  renderChat();
+}
+
+function renderChat(){
+  const name = document.getElementById('chatName').value || 'username';
+  document.getElementById('chatNameOut').textContent = name;
+  document.getElementById('chatStatusOut').textContent = document.getElementById('chatStatus').value;
+  document.getElementById('chatsScreen').classList.toggle('dark-mode', document.getElementById('chatDarkMode').checked);
+
+  const avatarEl = document.getElementById('chatAvatarOut');
+  avatarEl.innerHTML = chatAvatarSrc ? `<img src="${chatAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
+
+  const area = document.getElementById('chatMessagesArea');
+  area.innerHTML = '';
+  chatMessages.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'ig-bubble-row ' + m.sender;
+    const bubble = document.createElement('div');
+    bubble.className = 'ig-bubble ' + m.sender;
+    bubble.textContent = m.text;
+    row.appendChild(bubble);
+    area.appendChild(row);
+  });
+
+  document.getElementById('chatSeenOut').style.display = document.getElementById('chatSeen').checked ? 'block' : 'none';
+
+  document.getElementById('chatMsgCount').textContent = chatMessages.length;
+  const listEl = document.getElementById('chatMsgList');
+  if(chatMessages.length === 0){
+    listEl.innerHTML = '<div class="empty-hint">No messages yet</div>';
+  } else {
+    listEl.innerHTML = '';
+    chatMessages.forEach((m, idx) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <span class="tag ${m.sender}">${m.sender === 'me' ? 'ME' : 'THEM'}</span>
+        <span class="txt">${escapeHtml(m.text)}</span>
+        <button class="del" onclick="deleteChatMessage(${idx})">✕</button>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+}
+
+function downloadChat(){
+  const frame = document.querySelector('#tab-chats .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'instagram-dm.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== STORIES ===================== */
+let stAvatarSrc = null;
+let stBgSrc = null;
+
+function handleStAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { stAvatarSrc = e.target.result; renderStory(); };
+  reader.readAsDataURL(file);
+}
+
+function handleStBgUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { stBgSrc = e.target.result; renderStory(); };
+  reader.readAsDataURL(file);
+}
+
+function renderStory(){
+  const username = document.getElementById('stUsername').value || 'username';
+  document.getElementById('stUsernameOut').textContent = username;
+  document.getElementById('stTimeOut').textContent = document.getElementById('stTime').value || '';
+  document.getElementById('stCaptionOut').textContent = document.getElementById('stCaption').value;
+
+  const avatarEl = document.getElementById('stAvatarOut');
+  avatarEl.innerHTML = stAvatarSrc ? `<img src="${stAvatarSrc}">` : (username.trim().charAt(0).toUpperCase() || '?');
+
+  const screen = document.getElementById('storyScreen');
+  screen.style.backgroundImage = stBgSrc ? `url(${stBgSrc})` : 'linear-gradient(160deg, #4f5bd5, #962fbf, #d62976, #fa7e1e)';
+
+  const segCount = Math.max(1, Math.min(10, parseInt(document.getElementById('stSegments').value) || 1));
+  const segArea = document.getElementById('storySegmentsOut');
+  segArea.innerHTML = '';
+  for(let i=0;i<segCount;i++){
+    const seg = document.createElement('div');
+    seg.className = 'seg' + (i===0 ? ' filled' : '');
+    segArea.appendChild(seg);
+  }
+}
+
+function downloadStory(){
+  const frame = document.querySelector('#tab-stories .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'instagram-story.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== NOTES ===================== */
+let noteDraftAvatarSrc = null;
+let noteEntries = [
+  { username: 'peter.parker', avatarSrc: null, noteText: 'feeling anxious 🥲' },
+  { username: 'mj.jonesss', avatarSrc: null, noteText: '' }
+];
+
+function handleNoteDraftAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { noteDraftAvatarSrc = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function addNoteEntry(){
+  const username = document.getElementById('noteDraftUsername').value.trim();
+  if(!username) return;
+  const noteText = document.getElementById('noteDraftText').value.trim();
+  noteEntries.push({ username, avatarSrc: noteDraftAvatarSrc, noteText });
+
+  document.getElementById('noteDraftUsername').value = '';
+  document.getElementById('noteDraftText').value = '';
+  document.getElementById('noteDraftAvatarUpload').value = '';
+  noteDraftAvatarSrc = null;
+
+  renderNotes();
+}
+
+function removeNoteEntry(idx){
+  noteEntries.splice(idx, 1);
+  renderNotes();
+}
+
+function renderNotes(){
+  document.getElementById('notesScreen').classList.toggle('dark-mode', document.getElementById('notesDarkMode').checked);
+
+  const row = document.getElementById('notesRowOut');
+  row.innerHTML = '';
+  noteEntries.forEach(entry => {
+    const col = document.createElement('div');
+    col.className = 'ig-note-col' + (entry.noteText ? '' : ' ig-note-filler');
+    const avatarHtml = entry.avatarSrc ? `<img src="${entry.avatarSrc}">` : (entry.username.trim().charAt(0).toUpperCase() || '?');
+    col.innerHTML = `
+      ${entry.noteText ? `<div class="ig-note-bubble">${escapeHtml(entry.noteText)}</div>` : ''}
+      <div class="ig-note-avatar-wrap"><div class="ig-note-avatar">${avatarHtml}</div></div>
+      <div class="ig-note-uname">${escapeHtml(entry.username)}</div>
+    `;
+    row.appendChild(col);
+  });
+
+  document.getElementById('noteEntryCount').textContent = noteEntries.length;
+  const listEl = document.getElementById('noteEntryList');
+  if(noteEntries.length === 0){
+    listEl.innerHTML = '<div class="empty-hint">No one added yet</div>';
+  } else {
+    listEl.innerHTML = '';
+    noteEntries.forEach((entry, idx) => {
+      const listRow = document.createElement('div');
+      listRow.className = 'msg-row';
+      const thumb = entry.avatarSrc
+        ? `<img src="${entry.avatarSrc}" class="thumb" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+        : '';
+      listRow.innerHTML = `
+        ${thumb}
+        <span class="txt">${escapeHtml(entry.username)}${entry.noteText ? ' — ' + escapeHtml(entry.noteText) : ''}</span>
+        <button class="del" onclick="removeNoteEntry(${idx})">✕</button>
+      `;
+      listEl.appendChild(listRow);
+    });
+  }
+}
+
+function downloadNotes(){
+  const frame = document.querySelector('#tab-notes .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'instagram-notes.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+/* ===================== STORYBOARD ===================== */
+const STORYBOARD_KEY = 'receipts_storyboard_v1';
+
+function pushPanelToStoryboard(canvas, label, btnEl){
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  let panels = [];
+  try { panels = JSON.parse(localStorage.getItem(STORYBOARD_KEY) || '[]'); } catch(e){ panels = []; }
+  panels.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), type: 'image', img: dataUrl, sourceLabel: label });
+  try {
+    localStorage.setItem(STORYBOARD_KEY, JSON.stringify(panels));
+    if(btnEl){
+      const original = btnEl.textContent;
+      btnEl.textContent = 'Added ✓';
+      btnEl.disabled = true;
+      setTimeout(() => { btnEl.textContent = original; btnEl.disabled = false; }, 1200);
+    }
+  } catch(e){
+    alert('Storyboard storage is full. Open the Storyboard page and download or clear some panels, then try again.');
+  }
+}
+
+function addProfileToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-profile .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Profile', btnEl));
+}
+function addChatToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-chats .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG DM', btnEl));
+}
+function addStoryToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-stories .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Story', btnEl));
+}
+function addNotesToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-notes .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Notes', btnEl));
+}
+
+renderProfile();
+renderChat();
+renderStory();
+renderNotes();
+</script>
+
+</body>
+</html>
