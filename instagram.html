@@ -137,6 +137,12 @@
   }
   .sender-toggle button.active-me{ border-color:#c13584; color:#ffd3ea; background: rgba(193,53,132,0.15); }
   .sender-toggle button.active-them{ border-color:#565a66; color: var(--ink); background: rgba(255,255,255,0.05); }
+  .type-toggle{ display:flex; gap:6px; margin-bottom:10px; }
+  .type-toggle button{
+    flex:1; padding:6px; border-radius:7px; border:1px solid var(--line);
+    background: var(--panel); color: var(--ink-dim); font-size:11.5px; cursor:pointer; font-family:inherit;
+  }
+  .type-toggle button.active{ border-color: var(--accent); color: var(--ink); background: rgba(245,166,35,0.08); }
 
   .composer{ background: var(--panel-2); border:1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
   .composer textarea{
@@ -252,15 +258,31 @@
   .ig-chat-avatar img{ width:100%; height:100%; object-fit:cover; }
   .ig-chat-name{ font-size:13.5px; font-weight:700; }
   .ig-chat-status{ font-size:11px; color:#8a8a8e; }
-  .ig-messages{ flex:1; overflow-y:auto; padding:12px 12px 6px; display:flex; flex-direction:column; gap:5px; }
-  .ig-bubble-row{ display:flex; }
+  .ig-messages{ flex:1; overflow-y:auto; padding:12px 16px 10px; display:flex; flex-direction:column; gap:11px; }
+  .ig-bubble-row{ display:flex; position:relative; }
   .ig-bubble-row.me{ justify-content:flex-end; }
   .ig-bubble-row.them{ justify-content:flex-start; }
   .ig-bubble{
-    max-width:72%; padding:9px 14px; font-size:14px; line-height:1.3; word-break:break-word; border-radius:20px;
+    max-width:72%; padding:9px 14px; font-size:14px; line-height:1.3; word-break:break-word; border-radius:20px; position:relative;
   }
   .ig-bubble.them{ background:#efefef; color:#000; }
   .ig-bubble.me{ background: #7C4DFF; color:#fff; }
+  .ig-bubble.media{ padding:0; background:none !important; overflow:hidden; line-height:0; max-width:65%; }
+  .ig-bubble.media img{ width:100%; display:block; border-radius:18px; }
+  .ig-video-play{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background: rgba(0,0,0,0.28);
+  }
+  .ig-video-play span{
+    width:44px; height:44px; border-radius:50%; background: rgba(0,0,0,0.55); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:18px; padding-left:3px;
+  }
+  .ig-reaction-badge{
+    position:absolute; bottom:-11px; right:6px; background:#fff; border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; font-size:12.5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3); border:1px solid rgba(0,0,0,0.08);
+  }
+  .ig-bubble-row.me .ig-reaction-badge{ right:auto; left:6px; }
   .ig-seen{ text-align:right; font-size:10.5px; color:#8a8a8e; padding:2px 14px 8px; }
   .ig-composer-bar{ display:flex; align-items:center; gap:8px; padding:8px 12px 14px; }
   .ig-composer-bar .pill{
@@ -510,9 +532,30 @@ queens, ny</textarea>
         <button id="chat-btn-me" class="active-me" onclick="setChatSender('me')">Me (right)</button>
         <button id="chat-btn-them" onclick="setChatSender('them')">Them (left)</button>
       </div>
+      <div class="type-toggle">
+        <button id="chat-type-text" class="active" onclick="setChatMsgType('text')">Text</button>
+        <button id="chat-type-image" onclick="setChatMsgType('image')">Photo</button>
+        <button id="chat-type-video" onclick="setChatMsgType('video')">Video</button>
+      </div>
       <textarea id="chatMsgText" placeholder="Type the line..."></textarea>
+      <div id="chatMediaFieldRow" style="display:none;">
+        <label class="btn btn-outline" for="chatMsgMedia" style="display:block; text-align:center;">Choose file</label>
+        <input type="file" id="chatMsgMedia" accept="image/*" style="display:none;" onchange="handleChatMediaUpload(event)">
+      </div>
+      <div class="field" style="margin-top:8px; margin-bottom:0;">
+        <label>Reaction (optional)</label>
+        <select class="styled-select" id="chatMsgReaction">
+          <option value="">None</option>
+          <option value="❤️">❤️</option>
+          <option value="😂">😂</option>
+          <option value="😮">😮</option>
+          <option value="😢">😢</option>
+          <option value="👍">👍</option>
+          <option value="🔥">🔥</option>
+        </select>
+      </div>
       <div class="composer-footer">
-        <button class="btn btn-accent" onclick="addChatMessage()">Add bubble</button>
+        <button class="btn btn-accent" id="chatAddBtn" onclick="addChatMessage()">Add bubble</button>
       </div>
     </div>
 
@@ -790,15 +833,27 @@ function downloadProfile(){
 /* ===================== CHATS ===================== */
 let chatAvatarSrc = null;
 let chatSender = 'me';
+let chatMsgType = 'text';
+let chatMediaDraftSrc = null;
 let chatMessages = [
-  { sender: 'them', text: "okay but did you see the news today" },
-  { sender: 'me', text: "unfortunately yes" }
+  { sender: 'them', type: 'text', text: "okay but did you see the news today", reaction: '' },
+  { sender: 'me', type: 'text', text: "unfortunately yes", reaction: '' }
 ];
 
 function setChatSender(s){
   chatSender = s;
   document.getElementById('chat-btn-me').classList.toggle('active-me', s==='me');
   document.getElementById('chat-btn-them').classList.toggle('active-them', s==='them');
+}
+
+function setChatMsgType(t){
+  chatMsgType = t;
+  document.getElementById('chat-type-text').classList.toggle('active', t==='text');
+  document.getElementById('chat-type-image').classList.toggle('active', t==='image');
+  document.getElementById('chat-type-video').classList.toggle('active', t==='video');
+  document.getElementById('chatMsgText').style.display = (t==='text') ? 'block' : 'none';
+  document.getElementById('chatMediaFieldRow').style.display = (t==='text') ? 'none' : 'block';
+  document.getElementById('chatAddBtn').style.display = (t==='text') ? 'inline-block' : 'none';
 }
 
 function handleChatAvatarUpload(event){
@@ -809,11 +864,25 @@ function handleChatAvatarUpload(event){
   reader.readAsDataURL(file);
 }
 
+function handleChatMediaUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const reaction = document.getElementById('chatMsgReaction').value;
+    chatMessages.push({ sender: chatSender, type: chatMsgType, src: e.target.result, reaction });
+    event.target.value = '';
+    renderChat();
+  };
+  reader.readAsDataURL(file);
+}
+
 function addChatMessage(){
   const ta = document.getElementById('chatMsgText');
   const text = ta.value.trim();
   if(!text) return;
-  chatMessages.push({ sender: chatSender, text });
+  const reaction = document.getElementById('chatMsgReaction').value;
+  chatMessages.push({ sender: chatSender, type: 'text', text, reaction });
   ta.value = '';
   renderChat();
 }
@@ -838,8 +907,19 @@ function renderChat(){
     const row = document.createElement('div');
     row.className = 'ig-bubble-row ' + m.sender;
     const bubble = document.createElement('div');
-    bubble.className = 'ig-bubble ' + m.sender;
-    bubble.textContent = m.text;
+    if(m.type === 'image' || m.type === 'video'){
+      bubble.className = 'ig-bubble media ' + m.sender;
+      bubble.innerHTML = `<img src="${m.src}">` + (m.type === 'video' ? '<div class="ig-video-play"><span>▶</span></div>' : '');
+    } else {
+      bubble.className = 'ig-bubble ' + m.sender;
+      bubble.textContent = m.text;
+    }
+    if(m.reaction){
+      const badge = document.createElement('div');
+      badge.className = 'ig-reaction-badge';
+      badge.textContent = m.reaction;
+      bubble.appendChild(badge);
+    }
     row.appendChild(bubble);
     area.appendChild(row);
   });
@@ -855,9 +935,10 @@ function renderChat(){
     chatMessages.forEach((m, idx) => {
       const row = document.createElement('div');
       row.className = 'msg-row';
+      const label = m.type === 'text' ? escapeHtml(m.text) : `[${m.type}]`;
       row.innerHTML = `
         <span class="tag ${m.sender}">${m.sender === 'me' ? 'ME' : 'THEM'}</span>
-        <span class="txt">${escapeHtml(m.text)}</span>
+        <span class="txt">${label}${m.reaction ? ' ' + m.reaction : ''}</span>
         <button class="del" onclick="deleteChatMessage(${idx})">✕</button>
       `;
       listEl.appendChild(row);
