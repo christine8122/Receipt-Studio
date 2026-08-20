@@ -57,16 +57,9 @@
     align-items:start;
   }
   @media (max-width: 880px){ .main-layout{ grid-template-columns: 1fr; } }
-  @media (max-width: 600px){
-    .topbar{ padding: 16px 18px; }
-    .brand-sub{ display:none; }
-    .main-layout{ padding: 16px 14px 40px; gap:18px; }
-    .panel{ position: static; padding:16px; }
-    .slide-main{ gap:8px; }
-    .nav-arrow{ width:36px; height:36px; font-size:17px; }
-  }
 
-  .panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: sticky; top: 28px; }
+  .panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+
   .section-label{
     font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 10.5px; letter-spacing: 0.12em;
     color: var(--ink-dim); text-transform: uppercase; margin: 0 0 10px; display:flex; align-items:center; gap:8px;
@@ -230,6 +223,16 @@
     padding:4px;
     line-height:1.2;
     overflow:hidden;
+  }
+
+  /* mobile overrides — placed last so they win the cascade at narrow widths */
+  @media (max-width: 600px){
+    .topbar{ padding: 16px 18px; }
+    .brand-sub{ display:none; }
+    .main-layout{ padding: 16px 14px 40px; gap:18px; }
+    .panel{ padding:16px; }
+    .slide-main{ gap:8px; }
+    .nav-arrow{ width:36px; height:36px; font-size:17px; }
   }
 </style>
 </head>
