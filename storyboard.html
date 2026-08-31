@@ -43,6 +43,10 @@
   .brand-name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; }
   .topbar-right{ display:flex; align-items:center; flex-wrap: wrap; gap:10px 16px; }
   .brand-sub{ font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:0.03em; }
+  .project-switcher{
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line); padding: 6px 10px; border-radius: 6px; max-width:160px;
+  }
   .nav-link{
     font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-dim); text-decoration:none;
     border: 1px solid var(--line); padding: 6px 12px; border-radius: 6px;
@@ -245,6 +249,8 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">arrange your panels into a scene</span>
+    <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
+    <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="index.html">Main tools</a>
     <a class="nav-link" href="instagram.html">Instagram tools</a>
     <a class="nav-link" href="twitter.html">X / Twitter tools</a>
@@ -254,9 +260,9 @@
 <div class="main-layout">
   <div class="panel">
     <p class="section-label">Storyboard</p>
-    <p class="panel-count"><b id="panelCount">0</b> panels</p>
+    <p class="panel-count"><b id="activeProjectLabel">No project</b> · <b id="panelCount">0</b> panels</p>
     <p class="hint">
-      Build screenshots on the Main or Instagram tools pages, then hit "+ Add to Storyboard" on each one. They'll show up here as a slideshow — flip through with the arrows, add caption cards between them, and export the whole scene as one image.
+      Build screenshots on the Main, Instagram, or X/Twitter tools pages, then hit "+ Add to Storyboard" on each one. They'll show up here as a slideshow — flip through with the arrows, add caption cards between them, and export the whole scene as one image.
     </p>
 
     <p class="section-label" style="margin-top:18px;">Add a caption card</p>
@@ -279,13 +285,60 @@
 </div>
 
 <script>
-const STORYBOARD_KEY = 'receipts_storyboard_v1';
+/* ===================== PROJECTS / CHARACTERS (shared across pages) ===================== */
+const PROJECTS_KEY = 'receipts_projects_v1';
+const ACTIVE_PROJECT_KEY = 'receipts_active_project_v1';
+
+function loadProjectsData(){
+  try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); } catch(e){ return []; }
+}
+function getActiveProjectId(){
+  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+}
+function setActiveProjectId(id){
+  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+}
+function getActiveProject(){
+  const id = getActiveProjectId();
+  if(!id) return null;
+  return loadProjectsData().find(p => p.id === id) || null;
+}
+function getStoryboardKey(){
+  const id = getActiveProjectId();
+  return id ? ('receipts_storyboard_' + id) : 'receipts_storyboard_v1';
+}
+
+function populateProjectSwitcher(){
+  const select = document.getElementById('projectSwitcher');
+  if(!select) return;
+  const projects = loadProjectsData();
+  const activeId = getActiveProjectId();
+  select.innerHTML = '<option value="">No project</option>' +
+    projects.map(p => `<option value="${p.id}">${p.name.replace(/</g,'&lt;')}</option>`).join('');
+  select.value = projects.some(p => p.id === activeId) ? activeId : '';
+
+  const label = document.getElementById('activeProjectLabel');
+  if(label){
+    const proj = getActiveProject();
+    label.textContent = proj ? proj.name : 'No project';
+  }
+}
+
+function onProjectSwitcherChange(id){
+  setActiveProjectId(id);
+  populateProjectSwitcher();
+  currentIndex = 0;
+  loadPanels();
+  render();
+}
+
+/* ===================== STORYBOARD ===================== */
 let panels = [];
 let currentIndex = 0;
 
 function loadPanels(){
   try {
-    panels = JSON.parse(localStorage.getItem(STORYBOARD_KEY) || '[]');
+    panels = JSON.parse(localStorage.getItem(getStoryboardKey()) || '[]');
   } catch(e){
     panels = [];
   }
@@ -293,7 +346,7 @@ function loadPanels(){
 
 function savePanels(){
   try {
-    localStorage.setItem(STORYBOARD_KEY, JSON.stringify(panels));
+    localStorage.setItem(getStoryboardKey(), JSON.stringify(panels));
   } catch(e){
     alert('Could not save — storage may be full. Try downloading the board and clearing some panels.');
   }
@@ -545,6 +598,7 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'ArrowRight') nextSlide();
 });
 
+populateProjectSwitcher();
 loadPanels();
 render();
 </script>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipts — Projects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161c; --panel: #1b1e26; --panel-2: #21242e; --line: #2c303c;
+    --ink: #e9e9ee; --ink-dim: #9397a6; --accent: #f5a623; --accent-dim: #b97e1d; --danger: #e0654f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background: var(--bg);
+    background-image: radial-gradient(circle at 15% 10%, rgba(245,166,35,0.06), transparent 40%), radial-gradient(circle at 85% 90%, rgba(43,138,255,0.05), transparent 40%);
+    color: var(--ink); font-family: 'Proxima Nova', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height:100vh;
+  }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; padding: 22px 32px; border-bottom: 1px solid var(--line); }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand-mark{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; color: var(--accent); border:1px solid var(--accent-dim); padding:3px 7px; border-radius:4px; }
+  .brand-name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; }
+  .topbar-right{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; }
+  .brand-sub{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:0.03em; }
+  .nav-link{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color: var(--ink-dim); text-decoration:none; border:1px solid var(--line); padding:6px 12px; border-radius:6px; }
+  .nav-link:hover{ color: var(--ink); border-color: var(--accent-dim); }
+
+  .main-layout{ display:grid; grid-template-columns: 320px 1fr; gap:28px; padding:28px 32px 60px; align-items:start; }
+  @media (max-width: 880px){ .main-layout{ grid-template-columns: 1fr; } }
+
+  .panel{ background: var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .section-label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.12em; color: var(--ink-dim); text-transform:uppercase; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .section-label::after{ content:''; flex:1; height:1px; background: var(--line); }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; color: var(--ink-dim); margin-bottom:6px; }
+  .field input[type=text]{ width:100%; background: var(--panel-2); border:1px solid var(--line); border-radius:8px; color: var(--ink); padding:9px 11px; font-size:14px; font-family:inherit; }
+  .field input:focus{ outline:none; border-color: var(--accent-dim); }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .btn{ font-family:inherit; font-size:13px; font-weight:600; padding:9px 16px; border-radius:7px; border:none; cursor:pointer; }
+  .btn-accent{ background: var(--accent); color:#1a1204; width:100%; padding:12px; font-size:14px; }
+  .btn-accent:hover{ background:#ffb63d; }
+  .btn-outline{ background:none; border:1px solid var(--line); color: var(--ink-dim); padding:10px; font-size:13px; }
+  .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
+  .btn-small{ font-family:inherit; font-size:11.5px; padding:6px 10px; border-radius:6px; border:1px solid var(--line); background: var(--panel-2); color: var(--ink-dim); cursor:pointer; }
+  .btn-small:hover{ color: var(--ink); border-color: var(--accent-dim); }
+  .btn-small.danger:hover{ color: var(--danger); border-color: var(--danger); }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; font-size:13px; color: var(--ink); cursor:pointer; }
+  .checkbox-row input{ width:15px; height:15px; accent-color: var(--accent); cursor:pointer; }
+  .upload-drop{ border:1.5px dashed var(--line); border-radius:10px; padding:14px 12px; text-align:center; cursor:pointer; color: var(--ink-dim); font-size:13px; display:block; }
+  .upload-drop:hover{ border-color: var(--accent-dim); color: var(--ink); }
+  .hint{ font-family:'JetBrains Mono',monospace; font-size:11px; color: var(--ink-dim); line-height:1.5; }
+
+  .project-row{ display:flex; align-items:center; gap:8px; background: var(--panel-2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; margin-bottom:8px; }
+  .project-row.active{ border-color: var(--accent); background: rgba(245,166,35,0.08); }
+  .project-row .pname{ flex:1; font-size:13.5px; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .project-row .ptag{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color: var(--accent); border:1px solid var(--accent-dim); padding:2px 6px; border-radius:4px; flex-shrink:0; }
+
+  .empty-hint{ font-size:13px; color: var(--ink-dim); text-align:center; padding:50px 24px; border:1.5px dashed var(--line); border-radius:14px; }
+
+  .char-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+  .char-card{ background: var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .char-card-top{ display:flex; align-items:center; gap:12px; }
+  .char-avatar{ width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background: linear-gradient(135deg,#8e8e93,#57575b); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:18px; }
+  .char-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .char-name{ font-weight:700; font-size:15px; }
+  .char-handles{ font-size:11.5px; color: var(--ink-dim); margin-top:2px; line-height:1.5; }
+  .char-actions{ display:flex; gap:8px; margin-top:12px; }
+  .char-actions button{ flex:1; }
+
+  .composer-block{ background: var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:22px; }
+  .platform-fields{ border-top:1px solid var(--line); padding-top:12px; margin-top:12px; }
+  .platform-fields-label{ font-size:12px; font-weight:700; color: var(--ink-dim); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em; font-family:'JetBrains Mono',monospace; }
+  .account-row{ background: var(--panel); border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:10px; }
+  .account-row input[type=text]{
+    width:100%; background: var(--panel-2); border:1px solid var(--line); border-radius:7px;
+    color: var(--ink); padding:8px 10px; font-size:13px; font-family:inherit; margin-bottom:8px;
+  }
+  .account-row .row2{ margin-bottom:0; }
+  .account-row .row2 input{ margin-bottom:8px; }
+  .account-row-footer{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; }
+  .account-row .upload-drop{ font-size:11.5px; padding:8px; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-mark">RCPT</span>
+    <span class="brand-name">Receipts</span>
+  </div>
+  <div class="topbar-right">
+    <span class="brand-sub">projects &amp; reusable characters</span>
+    <a class="nav-link" href="index.html">Main tools</a>
+    <a class="nav-link" href="instagram.html">Instagram tools</a>
+    <a class="nav-link" href="twitter.html">X / Twitter tools</a>
+    <a class="nav-link" href="storyboard.html">Storyboard</a>
+  </div>
+</div>
+
+<div class="main-layout">
+  <div class="panel">
+    <p class="section-label">Projects</p>
+    <div class="field">
+      <input type="text" id="newProjectName" placeholder="New project name" onkeydown="if(event.key==='Enter'){createProject(); event.preventDefault();}">
+    </div>
+    <button class="btn btn-accent" onclick="createProject()">+ Create project</button>
+
+    <div id="projectListWrap" style="margin-top:18px;"></div>
+
+    <p class="hint" style="margin-top:16px;">
+      The active project's characters show up as "Load character" options on the Main, Instagram, and X/Twitter tools pages, and each project gets its own Storyboard.
+    </p>
+  </div>
+
+  <div id="mainArea"></div>
+</div>
+
+<script>
+const PROJECTS_KEY = 'receipts_projects_v1';
+const ACTIVE_PROJECT_KEY = 'receipts_active_project_v1';
+
+let draftAvatar = null;
+let editingCharId = null;
+let draftIgAccounts = [];
+let draftTwAccounts = [];
+let draftMsgAccounts = [];
+
+function loadProjectsData(){
+  try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); } catch(e){ return []; }
+}
+function saveProjectsData(projects){
+  try { localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects)); } catch(e){ alert('Could not save — storage may be full.'); }
+}
+function getActiveProjectId(){
+  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+}
+function setActiveProjectId(id){
+  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+}
+function migrateCharacter(c){
+  // backward compatibility for characters saved before multi-account support
+  if(!c.instagramAccounts){
+    c.instagramAccounts = c.instagramUsername
+      ? [{ id: 'acc_legacy_ig', label: 'Main', username: c.instagramUsername, verified: !!c.instagramVerified, avatarSrc: null }]
+      : [];
+  }
+  if(!c.twitterAccounts){
+    c.twitterAccounts = c.twitterUsername
+      ? [{ id: 'acc_legacy_tw', label: 'Main', username: c.twitterUsername, verified: !!c.twitterVerified, private: !!c.twitterPrivate, avatarSrc: null }]
+      : [];
+  }
+  if(!c.messageAccounts){
+    c.messageAccounts = [];
+  }
+  return c;
+}
+function getActiveProject(){
+  const id = getActiveProjectId();
+  if(!id) return null;
+  const proj = loadProjectsData().find(p => p.id === id) || null;
+  if(proj) proj.characters = proj.characters.map(migrateCharacter);
+  return proj;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function createProject(){
+  const input = document.getElementById('newProjectName');
+  const name = input.value.trim();
+  if(!name) return;
+  const projects = loadProjectsData();
+  const id = 'proj_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  projects.push({ id, name, createdAt: Date.now(), characters: [] });
+  saveProjectsData(projects);
+  setActiveProjectId(id);
+  input.value = '';
+  render();
+}
+
+function selectProject(id){
+  setActiveProjectId(id);
+  render();
+}
+
+function deleteProject(id){
+  if(!confirm('Delete this project, its characters, and its storyboard? This can\'t be undone.')) return;
+  let projects = loadProjectsData();
+  projects = projects.filter(p => p.id !== id);
+  saveProjectsData(projects);
+  try { localStorage.removeItem('receipts_storyboard_' + id); } catch(e){}
+  if(getActiveProjectId() === id){
+    setActiveProjectId(projects.length ? projects[0].id : '');
+  }
+  render();
+}
+
+function handleDraftAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { draftAvatar = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function getDraftAccountArray(platform){
+  if(platform === 'ig') return draftIgAccounts;
+  if(platform === 'tw') return draftTwAccounts;
+  return draftMsgAccounts;
+}
+
+function addDraftAccount(platform){
+  const acc = { id: 'acc_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), label: '', username: '', verified: false, private: false, avatarSrc: null };
+  getDraftAccountArray(platform).push(acc);
+  renderAccountLists();
+}
+
+function removeDraftAccount(platform, idx){
+  getDraftAccountArray(platform).splice(idx, 1);
+  renderAccountLists();
+}
+
+function updateDraftAccountField(platform, idx, field, value){
+  const arr = getDraftAccountArray(platform);
+  if(arr[idx]) arr[idx][field] = value;
+}
+
+function handleDraftAccountAvatarUpload(event, platform, idx){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const arr = getDraftAccountArray(platform);
+    if(arr[idx]) arr[idx].avatarSrc = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function accountRowHtml(platform, a, idx){
+  const isTwitter = platform === 'tw';
+  const isMessage = platform === 'msg';
+  const usernameLabel = isMessage ? 'Contact name' : 'Username';
+  return `
+    <div class="account-row">
+      <div class="row2">
+        <input type="text" placeholder="Label (e.g. ${isMessage ? 'Old number, Work phone' : 'Public, Finsta'})" value="${escapeHtml(a.label)}" oninput="updateDraftAccountField('${platform}', ${idx}, 'label', this.value)">
+        <input type="text" placeholder="${usernameLabel}" value="${escapeHtml(a.username)}" oninput="updateDraftAccountField('${platform}', ${idx}, 'username', this.value)">
+      </div>
+      ${!isMessage ? `
+        <label class="checkbox-row" style="margin-bottom:${isTwitter ? '8px' : '0'};">
+          <input type="checkbox" ${a.verified ? 'checked' : ''} onchange="updateDraftAccountField('${platform}', ${idx}, 'verified', this.checked)"> Verified
+        </label>
+      ` : ''}
+      ${isTwitter ? `
+        <label class="checkbox-row">
+          <input type="checkbox" ${a.private ? 'checked' : ''} onchange="updateDraftAccountField('${platform}', ${idx}, 'private', this.checked)"> Private
+        </label>
+      ` : ''}
+      <label class="upload-drop" for="acc-avatar-${platform}-${idx}">Avatar override (optional — falls back to main avatar)</label>
+      <input type="file" id="acc-avatar-${platform}-${idx}" accept="image/*" style="display:none;" onchange="handleDraftAccountAvatarUpload(event, '${platform}', ${idx})">
+      <div class="account-row-footer">
+        <span class="hint">${a.avatarSrc ? 'Custom avatar set' : ''}</span>
+        <button class="btn-small danger" onclick="removeDraftAccount('${platform}', ${idx})">Remove ${isMessage ? 'profile' : 'account'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAccountLists(){
+  const igWrap = document.getElementById('igAccountsList');
+  const twWrap = document.getElementById('twAccountsList');
+  const msgWrap = document.getElementById('msgAccountsList');
+  if(igWrap) igWrap.innerHTML = draftIgAccounts.map((a, idx) => accountRowHtml('ig', a, idx)).join('') || '<p class="hint" style="margin-bottom:10px;">No Instagram accounts yet.</p>';
+  if(twWrap) twWrap.innerHTML = draftTwAccounts.map((a, idx) => accountRowHtml('tw', a, idx)).join('') || '<p class="hint" style="margin-bottom:10px;">No X accounts yet.</p>';
+  if(msgWrap) msgWrap.innerHTML = draftMsgAccounts.map((a, idx) => accountRowHtml('msg', a, idx)).join('') || '<p class="hint" style="margin-bottom:10px;">No message profiles yet.</p>';
+}
+
+function resetCharacterForm(){
+  editingCharId = null;
+  draftAvatar = null;
+  draftIgAccounts = [];
+  draftTwAccounts = [];
+  draftMsgAccounts = [];
+  const nameEl = document.getElementById('charName');
+  if(nameEl) nameEl.value = '';
+  const upload = document.getElementById('charAvatarUpload');
+  if(upload) upload.value = '';
+  const btn = document.getElementById('charSaveBtn');
+  if(btn) btn.textContent = '+ Add character';
+  renderAccountLists();
+}
+
+function saveCharacter(){
+  const projectId = getActiveProjectId();
+  if(!projectId) return;
+  const name = document.getElementById('charName').value.trim();
+  if(!name) return;
+
+  const projects = loadProjectsData();
+  const proj = projects.find(p => p.id === projectId);
+  if(!proj) return;
+
+  const data = {
+    id: editingCharId || ('char_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)),
+    name,
+    avatarSrc: draftAvatar,
+    instagramAccounts: draftIgAccounts.filter(a => a.username.trim()),
+    twitterAccounts: draftTwAccounts.filter(a => a.username.trim()),
+    messageAccounts: draftMsgAccounts.filter(a => a.username.trim())
+  };
+
+  if(editingCharId){
+    const idx = proj.characters.findIndex(c => c.id === editingCharId);
+    if(idx > -1){
+      if(!draftAvatar) data.avatarSrc = proj.characters[idx].avatarSrc;
+      proj.characters[idx] = data;
+    }
+  } else {
+    proj.characters.push(data);
+  }
+  saveProjectsData(projects);
+  resetCharacterForm();
+  render();
+}
+
+function editCharacter(id){
+  const proj = getActiveProject();
+  if(!proj) return;
+  const c = proj.characters.find(c => c.id === id);
+  if(!c) return;
+  editingCharId = id;
+  draftAvatar = c.avatarSrc;
+  draftIgAccounts = (c.instagramAccounts || []).map(a => Object.assign({}, a));
+  draftTwAccounts = (c.twitterAccounts || []).map(a => Object.assign({}, a));
+  draftMsgAccounts = (c.messageAccounts || []).map(a => Object.assign({}, a));
+  document.getElementById('charName').value = c.name;
+  document.getElementById('charSaveBtn').textContent = 'Save changes';
+  renderAccountLists();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deleteCharacter(id){
+  if(!confirm('Remove this character from the project?')) return;
+  const projects = loadProjectsData();
+  const proj = projects.find(p => p.id === getActiveProjectId());
+  if(!proj) return;
+  proj.characters = proj.characters.filter(c => c.id !== id);
+  saveProjectsData(projects);
+  render();
+}
+
+function render(){
+  const projects = loadProjectsData();
+  const activeId = getActiveProjectId();
+
+  const listWrap = document.getElementById('projectListWrap');
+  listWrap.innerHTML = projects.map(p => `
+    <div class="project-row ${p.id === activeId ? 'active' : ''}">
+      <span class="pname">${escapeHtml(p.name)}</span>
+      ${p.id === activeId ? '<span class="ptag">ACTIVE</span>' : `<button class="btn-small" onclick="selectProject('${p.id}')">Use</button>`}
+      <button class="btn-small danger" onclick="deleteProject('${p.id}')">✕</button>
+    </div>
+  `).join('');
+
+  const mainArea = document.getElementById('mainArea');
+  if(!activeId){
+    mainArea.innerHTML = '<div class="empty-hint">No active project yet.<br>Create one on the left to start adding reusable characters.</div>';
+    return;
+  }
+
+  const project = projects.find(p => p.id === activeId);
+  const chars = project ? project.characters.map(migrateCharacter) : [];
+
+  mainArea.innerHTML = `
+    <p class="section-label">Characters in "${escapeHtml(project ? project.name : '')}"</p>
+
+    <div class="composer-block">
+      <div class="row2">
+        <div class="field">
+          <label>Character name</label>
+          <input type="text" id="charName" placeholder="e.g. Peter Parker">
+        </div>
+        <div class="field">
+          <label class="upload-drop" for="charAvatarUpload">Upload avatar</label>
+          <input type="file" id="charAvatarUpload" accept="image/*" style="display:none;" onchange="handleDraftAvatarUpload(event)">
+        </div>
+      </div>
+
+      <div class="platform-fields">
+        <div class="platform-fields-label">Instagram accounts</div>
+        <div id="igAccountsList"></div>
+        <button class="btn-small" onclick="addDraftAccount('ig')">+ Add Instagram account</button>
+      </div>
+
+      <div class="platform-fields">
+        <div class="platform-fields-label">X / Twitter accounts</div>
+        <div id="twAccountsList"></div>
+        <button class="btn-small" onclick="addDraftAccount('tw')">+ Add X account</button>
+      </div>
+
+      <div class="platform-fields">
+        <div class="platform-fields-label">Message contacts</div>
+        <div id="msgAccountsList"></div>
+        <button class="btn-small" onclick="addDraftAccount('msg')">+ Add message profile</button>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <button class="btn btn-accent" id="charSaveBtn" onclick="saveCharacter()" style="flex:1;">+ Add character</button>
+        <button class="btn btn-outline" onclick="resetCharacterForm()">Clear</button>
+      </div>
+    </div>
+
+    ${chars.length === 0 ? '<div class="empty-hint">No characters yet — add one above.</div>' : `
+      <div class="char-grid">
+        ${chars.map(c => `
+          <div class="char-card">
+            <div class="char-card-top">
+              <div class="char-avatar">${c.avatarSrc ? `<img src="${c.avatarSrc}">` : (c.name.trim().charAt(0).toUpperCase() || '?')}</div>
+              <div>
+                <div class="char-name">${escapeHtml(c.name)}</div>
+                <div class="char-handles">
+                  ${[
+                    ...(c.instagramAccounts || []).map(a => `IG — ${escapeHtml(a.label || 'Account')}: @${escapeHtml(a.username)}${a.verified ? ' ✔️' : ''}`),
+                    ...(c.twitterAccounts || []).map(a => `X — ${escapeHtml(a.label || 'Account')}: @${escapeHtml(a.username)}${a.verified ? ' ✔️' : ''}${a.private ? ' 🔒' : ''}`),
+                    ...(c.messageAccounts || []).map(a => `Texts — ${escapeHtml(a.label || 'Profile')}: ${escapeHtml(a.username)}`)
+                  ].join('<br>')}
+                </div>
+              </div>
+            </div>
+            <div class="char-actions">
+              <button class="btn-small" onclick="editCharacter('${c.id}')">Edit</button>
+              <button class="btn-small danger" onclick="deleteCharacter('${c.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+  renderAccountLists();
+}
+
+render();
+</script>
+
+</body>
+</html>

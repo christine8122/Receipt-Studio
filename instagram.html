@@ -67,6 +67,10 @@
     border-radius: 6px;
   }
   .nav-link:hover{ color: var(--ink); border-color: var(--accent-dim); }
+  .project-switcher{
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line); padding: 6px 10px; border-radius: 6px; max-width:160px;
+  }
 
   .tabbar{ display:flex; gap:4px; padding: 14px 32px 0; flex-wrap: wrap; }
   .tab-btn{
@@ -120,6 +124,10 @@
     resize: vertical;
   }
   .field input:focus, .field textarea:focus{ outline: none; border-color: var(--accent-dim); }
+  select.styled-select{
+    width:100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    color: var(--ink); padding: 9px 11px; font-size: 14px; font-family: inherit;
+  }
   .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
   .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
 
@@ -393,6 +401,8 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">instagram-flavored props</span>
+    <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
+    <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="index.html">← Back to main tools</a>
     <a class="nav-link" href="twitter.html">X / Twitter tools →</a>
     <a class="nav-link" href="storyboard.html">Storyboard →</a>
@@ -411,6 +421,18 @@
 <div class="layout" id="tab-profile">
   <div class="panel">
     <p class="section-label">Account</p>
+    <div class="field">
+      <label>Character (optional)</label>
+      <select class="styled-select" id="profileCharacterPicker" onchange="onCharacterPicked('profile', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="profileAccountField" style="display:none;">
+      <label>Which of their IG accounts?</label>
+      <select class="styled-select" id="profileAccountPicker" onchange="applyCharacterToProfile(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
     <div class="field">
       <label>Username</label>
       <input type="text" id="pfUsername" value="peter.parker" oninput="renderProfile()">
@@ -502,6 +524,18 @@ queens, ny</textarea>
   <div class="panel">
     <p class="section-label">Conversation</p>
     <div class="field">
+      <label>Character (optional)</label>
+      <select class="styled-select" id="chatsCharacterPicker" onchange="onCharacterPicked('chats', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="chatsAccountField" style="display:none;">
+      <label>Which of their IG accounts?</label>
+      <select class="styled-select" id="chatsAccountPicker" onchange="applyCharacterToChats(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
+    <div class="field">
       <label>Contact name</label>
       <input type="text" id="chatName" value="mj.jonesss" oninput="renderChat()">
     </div>
@@ -592,6 +626,18 @@ queens, ny</textarea>
 <div class="layout" id="tab-stories" style="display:none;">
   <div class="panel">
     <p class="section-label">Poster</p>
+    <div class="field">
+      <label>Load a saved character</label>
+      <select class="styled-select" id="storiesCharacterPicker" onchange="onCharacterPicked('stories', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="storiesAccountField" style="display:none;">
+      <label>Which of their IG accounts?</label>
+      <select class="styled-select" id="storiesAccountPicker" onchange="applyCharacterToStories(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
     <div class="row2">
       <div class="field">
         <label>Username</label>
@@ -658,6 +704,18 @@ queens, ny</textarea>
     <p class="section-label">Add a person</p>
     <div class="composer">
       <div class="field" style="margin-bottom:8px;">
+        <label>Load a saved character (optional)</label>
+        <select class="styled-select" id="notesCharacterPicker" onchange="onCharacterPicked('notes', this.value)">
+          <option value="">— pick a saved character —</option>
+        </select>
+      </div>
+      <div class="field" id="notesAccountField" style="display:none; margin-bottom:8px;">
+        <label>Which of their IG accounts?</label>
+        <select class="styled-select" id="notesAccountPicker" onchange="applyCharacterToNotesDraft(this.value)">
+          <option value="">— pick an account —</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
         <label>Username</label>
         <input type="text" id="noteDraftUsername" placeholder="e.g. mj.jonesss">
       </div>
@@ -708,6 +766,150 @@ function escapeHtml(str){
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+/* ===================== PROJECTS / CHARACTERS (shared across pages) ===================== */
+const PROJECTS_KEY = 'receipts_projects_v1';
+const ACTIVE_PROJECT_KEY = 'receipts_active_project_v1';
+
+function loadProjectsData(){
+  try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); } catch(e){ return []; }
+}
+function getActiveProjectId(){
+  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+}
+function setActiveProjectId(id){
+  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+}
+function migrateCharacter(c){
+  // backward compatibility for characters saved before multi-account support
+  if(!c.instagramAccounts){
+    c.instagramAccounts = c.instagramUsername
+      ? [{ id: 'acc_legacy_ig', label: 'Main', username: c.instagramUsername, verified: !!c.instagramVerified, avatarSrc: null }]
+      : [];
+  }
+  if(!c.twitterAccounts){
+    c.twitterAccounts = c.twitterUsername
+      ? [{ id: 'acc_legacy_tw', label: 'Main', username: c.twitterUsername, verified: !!c.twitterVerified, private: !!c.twitterPrivate, avatarSrc: null }]
+      : [];
+  }
+  return c;
+}
+
+function getActiveProject(){
+  const id = getActiveProjectId();
+  if(!id) return null;
+  const proj = loadProjectsData().find(p => p.id === id) || null;
+  if(proj) proj.characters = proj.characters.map(migrateCharacter);
+  return proj;
+}
+function getStoryboardKey(){
+  const id = getActiveProjectId();
+  return id ? ('receipts_storyboard_' + id) : 'receipts_storyboard_v1';
+}
+
+function populateProjectSwitcher(){
+  const select = document.getElementById('projectSwitcher');
+  if(!select) return;
+  const projects = loadProjectsData();
+  const activeId = getActiveProjectId();
+  select.innerHTML = '<option value="">No project</option>' +
+    projects.map(p => `<option value="${p.id}">${p.name.replace(/</g,'&lt;')}</option>`).join('');
+  select.value = projects.some(p => p.id === activeId) ? activeId : '';
+}
+
+function onProjectSwitcherChange(id){
+  setActiveProjectId(id);
+  populateAllCharacterPickers();
+}
+
+function populateCharacterPicker(selectId){
+  const select = document.getElementById(selectId);
+  if(!select) return;
+  const proj = getActiveProject();
+  const chars = proj ? proj.characters : [];
+  select.innerHTML = '<option value="">— pick a saved character —</option>' +
+    chars.map(c => `<option value="${c.id}">${c.name.replace(/</g,'&lt;')}</option>`).join('');
+}
+
+function populateAllCharacterPickers(){
+  ['profile','chats','stories','notes'].forEach(tab => {
+    populateCharacterPicker(tab + 'CharacterPicker');
+    const accountField = document.getElementById(tab + 'AccountField');
+    if(accountField) accountField.style.display = 'none';
+  });
+}
+
+function getCharacterById(charId){
+  const proj = getActiveProject();
+  if(!proj) return null;
+  return proj.characters.find(c => c.id === charId) || null;
+}
+
+// tab -> account picker id, shown after a character is chosen
+function onCharacterPicked(tab, charId){
+  const accountField = document.getElementById(tab + 'AccountField');
+  const accountPicker = document.getElementById(tab + 'AccountPicker');
+  if(!charId){
+    if(accountField) accountField.style.display = 'none';
+    return;
+  }
+  const c = getCharacterById(charId);
+  const accounts = c ? c.instagramAccounts : [];
+  if(!accounts || accounts.length === 0){
+    if(accountField) accountField.style.display = 'none';
+    alert(c.name + ' has no Instagram accounts saved yet — add one on the Projects page.');
+    return;
+  }
+  accountPicker.innerHTML = '<option value="">— pick an account —</option>' +
+    accounts.map(a => `<option value="${a.id}">${(a.label || 'Account').replace(/</g,'&lt;')} — @${a.username.replace(/</g,'&lt;')}</option>`).join('');
+  accountPicker.dataset.charId = charId;
+  accountField.style.display = 'block';
+}
+
+function applyCharacterToProfile(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('profileAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.instagramAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('pfName').value = c.name;
+  document.getElementById('pfUsername').value = a.username || '';
+  document.getElementById('pfVerified').checked = !!a.verified;
+  pfAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderProfile();
+}
+
+function applyCharacterToChats(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('chatsAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.instagramAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('chatName').value = a.username || c.name;
+  chatAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderChat();
+}
+
+function applyCharacterToStories(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('storiesAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.instagramAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('stUsername').value = a.username || c.name;
+  stAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderStory();
+}
+
+function applyCharacterToNotesDraft(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('notesAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.instagramAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('noteDraftUsername').value = a.username || c.name;
+  noteDraftAvatarSrc = a.avatarSrc || c.avatarSrc || null;
 }
 
 /* ===================== PROFILE ===================== */
@@ -1083,15 +1285,14 @@ function downloadNotes(){
 }
 
 /* ===================== STORYBOARD ===================== */
-const STORYBOARD_KEY = 'receipts_storyboard_v1';
-
 function pushPanelToStoryboard(canvas, label, btnEl){
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  const key = getStoryboardKey();
   let panels = [];
-  try { panels = JSON.parse(localStorage.getItem(STORYBOARD_KEY) || '[]'); } catch(e){ panels = []; }
+  try { panels = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ panels = []; }
   panels.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), type: 'image', img: dataUrl, sourceLabel: label });
   try {
-    localStorage.setItem(STORYBOARD_KEY, JSON.stringify(panels));
+    localStorage.setItem(key, JSON.stringify(panels));
     if(btnEl){
       const original = btnEl.textContent;
       btnEl.textContent = 'Added ✓';
@@ -1120,6 +1321,8 @@ function addNotesToStoryboard(btnEl){
   html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Notes', btnEl));
 }
 
+populateProjectSwitcher();
+populateAllCharacterPickers();
 renderProfile();
 renderChat();
 renderStory();

@@ -42,6 +42,10 @@
   .brand-name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; }
   .topbar-right{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; }
   .brand-sub{ font-family: 'JetBrains Mono', 'Courier New', monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:0.03em; }
+  .project-switcher{
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line); padding: 6px 10px; border-radius: 6px; max-width:160px;
+  }
   .nav-link{
     font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-dim); text-decoration:none;
     border: 1px solid var(--line); padding: 6px 12px; border-radius: 6px;
@@ -103,6 +107,7 @@
   .msg-list{ display:flex; flex-direction:column; gap:7px; max-height: 280px; overflow-y:auto; padding-right:2px; }
   .msg-row{ display:flex; align-items:flex-start; gap:8px; background: var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
   .msg-row.comment-subrow{ margin-left:18px; background: var(--panel); border-style:dashed; }
+  .msg-row.nested-subrow{ margin-left:36px; }
   .msg-row .tag{ font-family:'JetBrains Mono', monospace; font-size:9.5px; padding:2px 5px; border-radius:4px; white-space:nowrap; margin-top:2px; }
   .tag.me{ background: rgba(29,155,240,0.2); color:#8ecdff; }
   .tag.them{ background: rgba(255,255,255,0.09); color: var(--ink-dim); }
@@ -195,6 +200,7 @@
 
   /* reply / comment cards below the detail post */
   .tweet-reply-card{ display:flex; flex-direction:column; gap:2px; padding: 12px 14px; border-bottom: 1px solid #eff3f4; }
+  .tweet-reply-card.nested{ padding-left: 46px; background: rgba(0,0,0,0.015); }
   .tweet-reply-top{ display:flex; align-items:flex-start; gap:8px; }
   .tweet-reply-avatar{
     width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0;
@@ -268,6 +274,7 @@
   .tweet-lock{ color:#000; }
 
   .phone-screen.dark-mode .tweet-reply-card{ border-bottom-color:#2f3336; }
+  .phone-screen.dark-mode .tweet-reply-card.nested{ background: rgba(255,255,255,0.02); }
   .phone-screen.dark-mode .tweet-reply-name{ color:#fff; }
   .phone-screen.dark-mode .tweet-reply-text{ color:#fff; }
 
@@ -300,6 +307,8 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">x / twitter props</span>
+    <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
+    <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="index.html">Main tools</a>
     <a class="nav-link" href="instagram.html">Instagram tools</a>
     <a class="nav-link" href="storyboard.html">Storyboard</a>
@@ -318,6 +327,18 @@
 <div class="layout" id="tab-profile">
   <div class="panel">
     <p class="section-label">Account</p>
+    <div class="field">
+      <label>Load a saved character</label>
+      <select class="styled-select" id="profileCharacterPicker" onchange="onCharacterPicked('profile', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="profileAccountField" style="display:none;">
+      <label>Which of their X accounts?</label>
+      <select class="styled-select" id="profileAccountPicker" onchange="applyCharacterToProfile(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
     <div class="field">
       <label>Display name</label>
       <input type="text" id="pfName" value="Peter Parker" oninput="renderProfile()">
@@ -422,6 +443,18 @@ queens, ny</textarea>
 <div class="layout" id="tab-tweet" style="display:none;">
   <div class="panel">
     <p class="section-label">Poster</p>
+    <div class="field">
+      <label>Load a saved character</label>
+      <select class="styled-select" id="tweetCharacterPicker" onchange="onCharacterPicked('tweet', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="tweetAccountField" style="display:none;">
+      <label>Which of their X accounts?</label>
+      <select class="styled-select" id="tweetAccountPicker" onchange="applyCharacterToTweet(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
     <div class="row2">
       <div class="field">
         <label>Display name</label>
@@ -486,8 +519,20 @@ queens, ny</textarea>
     <p class="section-label">Add a comment reply</p>
     <div class="composer">
       <div class="field" style="margin-bottom:8px;">
-        <label>Reply to which post</label>
+        <label>Reply to</label>
         <select class="styled-select" id="twCommentTarget"></select>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label>Load a saved character (optional)</label>
+        <select class="styled-select" id="commentCharacterPicker" onchange="onCharacterPicked('comment', this.value)">
+          <option value="">— pick a saved character —</option>
+        </select>
+      </div>
+      <div class="field" id="commentAccountField" style="display:none; margin-bottom:8px;">
+        <label>Which of their X accounts?</label>
+        <select class="styled-select" id="commentAccountPicker" onchange="applyCharacterToComment(this.value)">
+          <option value="">— pick an account —</option>
+        </select>
       </div>
       <div class="row2" style="margin-bottom:8px;">
         <div class="field" style="margin-bottom:0;">
@@ -534,6 +579,18 @@ queens, ny</textarea>
 <div class="layout" id="tab-dms" style="display:none;">
   <div class="panel">
     <p class="section-label">Conversation</p>
+    <div class="field">
+      <label>Load a saved character</label>
+      <select class="styled-select" id="dmsCharacterPicker" onchange="onCharacterPicked('dms', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="dmsAccountField" style="display:none;">
+      <label>Which of their X accounts?</label>
+      <select class="styled-select" id="dmsAccountPicker" onchange="applyCharacterToDms(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
     <div class="field">
       <label>Contact name</label>
       <input type="text" id="dmName" value="mj.jonesss" oninput="renderDms()">
@@ -607,6 +664,18 @@ queens, ny</textarea>
     <p class="section-label">Add notification</p>
     <div class="composer">
       <div class="field" style="margin-bottom:8px;">
+        <label>Load a saved character (optional)</label>
+        <select class="styled-select" id="notifsCharacterPicker" onchange="onCharacterPicked('notifs', this.value)">
+          <option value="">— pick a saved character —</option>
+        </select>
+      </div>
+      <div class="field" id="notifsAccountField" style="display:none; margin-bottom:8px;">
+        <label>Which of their X accounts?</label>
+        <select class="styled-select" id="notifsAccountPicker" onchange="applyCharacterToNotifDraft(this.value)">
+          <option value="">— pick an account —</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
         <label>Type</label>
         <select class="styled-select" id="notifType">
           <option value="like">Like</option>
@@ -661,6 +730,164 @@ queens, ny</textarea>
 </div>
 
 <script>
+/* ===================== PROJECTS / CHARACTERS (shared across pages) ===================== */
+const PROJECTS_KEY = 'receipts_projects_v1';
+const ACTIVE_PROJECT_KEY = 'receipts_active_project_v1';
+
+function loadProjectsData(){
+  try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); } catch(e){ return []; }
+}
+function getActiveProjectId(){
+  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+}
+function setActiveProjectId(id){
+  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+}
+function migrateCharacter(c){
+  // backward compatibility for characters saved before multi-account support
+  if(!c.instagramAccounts){
+    c.instagramAccounts = c.instagramUsername
+      ? [{ id: 'acc_legacy_ig', label: 'Main', username: c.instagramUsername, verified: !!c.instagramVerified, avatarSrc: null }]
+      : [];
+  }
+  if(!c.twitterAccounts){
+    c.twitterAccounts = c.twitterUsername
+      ? [{ id: 'acc_legacy_tw', label: 'Main', username: c.twitterUsername, verified: !!c.twitterVerified, private: !!c.twitterPrivate, avatarSrc: null }]
+      : [];
+  }
+  return c;
+}
+
+function getActiveProject(){
+  const id = getActiveProjectId();
+  if(!id) return null;
+  const proj = loadProjectsData().find(p => p.id === id) || null;
+  if(proj) proj.characters = proj.characters.map(migrateCharacter);
+  return proj;
+}
+function getStoryboardKey(){
+  const id = getActiveProjectId();
+  return id ? ('receipts_storyboard_' + id) : 'receipts_storyboard_v1';
+}
+
+function populateProjectSwitcher(){
+  const select = document.getElementById('projectSwitcher');
+  if(!select) return;
+  const projects = loadProjectsData();
+  const activeId = getActiveProjectId();
+  select.innerHTML = '<option value="">No project</option>' +
+    projects.map(p => `<option value="${p.id}">${p.name.replace(/</g,'&lt;')}</option>`).join('');
+  select.value = projects.some(p => p.id === activeId) ? activeId : '';
+}
+
+function onProjectSwitcherChange(id){
+  setActiveProjectId(id);
+  populateAllCharacterPickers();
+}
+
+function populateCharacterPicker(selectId){
+  const select = document.getElementById(selectId);
+  if(!select) return;
+  const proj = getActiveProject();
+  const chars = proj ? proj.characters : [];
+  select.innerHTML = '<option value="">— pick a saved character —</option>' +
+    chars.map(c => `<option value="${c.id}">${c.name.replace(/</g,'&lt;')}</option>`).join('');
+}
+
+function populateAllCharacterPickers(){
+  ['profile','tweet','comment','dms','notifs'].forEach(tab => {
+    populateCharacterPicker(tab + 'CharacterPicker');
+    const accountField = document.getElementById(tab + 'AccountField');
+    if(accountField) accountField.style.display = 'none';
+  });
+}
+
+function getCharacterById(charId){
+  const proj = getActiveProject();
+  if(!proj) return null;
+  return proj.characters.find(c => c.id === charId) || null;
+}
+
+// tab -> account picker id, shown after a character is chosen
+function onCharacterPicked(tab, charId){
+  const accountField = document.getElementById(tab + 'AccountField');
+  const accountPicker = document.getElementById(tab + 'AccountPicker');
+  if(!charId){
+    if(accountField) accountField.style.display = 'none';
+    return;
+  }
+  const c = getCharacterById(charId);
+  const accounts = c ? c.twitterAccounts : [];
+  if(!accounts || accounts.length === 0){
+    if(accountField) accountField.style.display = 'none';
+    alert(c.name + ' has no X accounts saved yet — add one on the Projects page.');
+    return;
+  }
+  accountPicker.innerHTML = '<option value="">— pick an account —</option>' +
+    accounts.map(a => `<option value="${a.id}">${(a.label || 'Account').replace(/</g,'&lt;')} — @${a.username.replace(/</g,'&lt;')}</option>`).join('');
+  accountPicker.dataset.charId = charId;
+  accountField.style.display = 'block';
+}
+
+function applyCharacterToProfile(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('profileAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.twitterAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('pfName').value = c.name;
+  document.getElementById('pfHandle').value = a.username || '';
+  document.getElementById('pfVerified').checked = !!a.verified;
+  pfAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderProfile();
+}
+
+function applyCharacterToTweet(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('tweetAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.twitterAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('twName').value = c.name;
+  document.getElementById('twHandle').value = a.username || '';
+  document.getElementById('twVerified').checked = !!a.verified;
+  document.getElementById('twPrivate').checked = !!a.private;
+  twAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderTweet();
+}
+
+function applyCharacterToComment(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('commentAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.twitterAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('twCommentName').value = c.name;
+  document.getElementById('twCommentHandle').value = a.username || '';
+  twCommentDraftAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+}
+
+function applyCharacterToDms(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('dmsAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.twitterAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('dmName').value = a.username || c.name;
+  dmAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderDms();
+}
+
+function applyCharacterToNotifDraft(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('notifsAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.twitterAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('notifActor').value = c.name;
+  notifDraftAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+}
+
 function switchTab(tab){
   const tabs = ['profile','tweet','dms','notifs'];
   tabs.forEach(t => {
@@ -716,15 +943,15 @@ function showSaveOverlay(dataUrl){
 }
 
 /* ===================== STORYBOARD ===================== */
-const STORYBOARD_KEY = 'receipts_storyboard_v1';
 
 function pushPanelToStoryboard(canvas, label, btnEl){
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  const key = getStoryboardKey();
   let panels = [];
-  try { panels = JSON.parse(localStorage.getItem(STORYBOARD_KEY) || '[]'); } catch(e){ panels = []; }
+  try { panels = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ panels = []; }
   panels.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), type: 'image', img: dataUrl, sourceLabel: label });
   try {
-    localStorage.setItem(STORYBOARD_KEY, JSON.stringify(panels));
+    localStorage.setItem(key, JSON.stringify(panels));
     if(btnEl){
       const original = btnEl.textContent;
       btnEl.textContent = 'Added ✓';
@@ -856,17 +1083,34 @@ function deleteTweet(idx){
 
 function addTweetComment(){
   const select = document.getElementById('twCommentTarget');
-  const targetIdx = parseInt(select.value);
-  if(isNaN(targetIdx) || !tweets[targetIdx]) return;
+  const targetValue = select.value;
+  if(!targetValue) return;
   const name = document.getElementById('twCommentName').value.trim();
   const text = document.getElementById('twCommentText').value.trim();
   if(!name || !text) return;
-  tweets[targetIdx].comments.push({
+
+  const newComment = {
     name,
     handle: document.getElementById('twCommentHandle').value.trim(),
     avatarSrc: twCommentDraftAvatarSrc,
-    text
-  });
+    text,
+    replies: []
+  };
+
+  const parts = targetValue.split(':');
+  if(parts[0] === 'post'){
+    const tweetIdx = parseInt(parts[1]);
+    if(!tweets[tweetIdx]) return;
+    tweets[tweetIdx].comments.push(newComment);
+  } else if(parts[0] === 'comment'){
+    const tweetIdx = parseInt(parts[1]);
+    const commentIdx = parseInt(parts[2]);
+    if(!tweets[tweetIdx] || !tweets[tweetIdx].comments[commentIdx]) return;
+    tweets[tweetIdx].comments[commentIdx].replies.push(newComment);
+  } else {
+    return;
+  }
+
   document.getElementById('twCommentText').value = '';
   document.getElementById('twCommentAvatarUpload').value = '';
   twCommentDraftAvatarSrc = null;
@@ -875,6 +1119,11 @@ function addTweetComment(){
 
 function deleteTweetComment(tweetIdx, commentIdx){
   tweets[tweetIdx].comments.splice(commentIdx, 1);
+  renderTweet();
+}
+
+function deleteTweetReply(tweetIdx, commentIdx, replyIdx){
+  tweets[tweetIdx].comments[commentIdx].replies.splice(replyIdx, 1);
   renderTweet();
 }
 
@@ -894,7 +1143,26 @@ function renderTweet(){
     card.className = 'tweet-detail-card';
 
     const repliesHtml = (t.comments && t.comments.length > 0)
-      ? t.comments.map(c => `
+      ? t.comments.map(c => {
+          const nestedHtml = (c.replies && c.replies.length > 0)
+            ? c.replies.map(r => `
+                <div class="tweet-reply-card nested">
+                  <div class="tweet-reply-top">
+                    <div class="tweet-reply-avatar">${r.avatarSrc ? `<img src="${r.avatarSrc}">` : (r.name.trim().charAt(0).toUpperCase() || '?')}</div>
+                    <div class="tweet-reply-body">
+                      <div class="tweet-reply-header-row">
+                        <span class="tweet-reply-name">${escapeHtml(r.name)}</span>
+                        <span class="tweet-reply-handle">@${escapeHtml((r.handle || '').replace(/^@/,''))}</span>
+                        <span class="tweet-reply-more">•••</span>
+                      </div>
+                      <div class="tweet-reply-text">${escapeHtml(r.text)}</div>
+                      <div class="tweet-reply-icons"><span>💬</span><span>🔁</span><span>🤍</span><span>📊</span><span>🔖</span><span>📤</span></div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')
+            : '';
+          return `
           <div class="tweet-reply-card">
             <div class="tweet-reply-top">
               <div class="tweet-reply-avatar">${c.avatarSrc ? `<img src="${c.avatarSrc}">` : (c.name.trim().charAt(0).toUpperCase() || '?')}</div>
@@ -909,7 +1177,9 @@ function renderTweet(){
               </div>
             </div>
           </div>
-        `).join('')
+          ${nestedHtml}
+        `;
+        }).join('')
       : '';
 
     card.innerHTML = `
@@ -970,20 +1240,34 @@ function renderTweet(){
           <button class="del" onclick="deleteTweetComment(${idx}, ${cIdx})">✕</button>
         `;
         listEl.appendChild(subRow);
+
+        (c.replies || []).forEach((r, rIdx) => {
+          const replyRow = document.createElement('div');
+          replyRow.className = 'msg-row comment-subrow nested-subrow';
+          replyRow.innerHTML = `
+            <span class="txt">↳↳ ${escapeHtml(r.name)}: ${escapeHtml(r.text)}</span>
+            <button class="del" onclick="deleteTweetReply(${idx}, ${cIdx}, ${rIdx})">✕</button>
+          `;
+          listEl.appendChild(replyRow);
+        });
       });
     });
   }
 
-  // keep the comment-target dropdown in sync with the current thread
+  // keep the comment-target dropdown in sync with the current thread and its comments
   const targetSelect = document.getElementById('twCommentTarget');
   const prevValue = targetSelect.value;
-  targetSelect.innerHTML = tweets.map((t, idx) => {
-    const preview = t.text.length > 30 ? t.text.slice(0, 30) + '…' : t.text;
-    return `<option value="${idx}">${escapeHtml((idx + 1) + '. ' + preview)}</option>`;
-  }).join('');
-  if(tweets.length === 0){
-    targetSelect.innerHTML = '<option value="">Add a post first</option>';
-  } else if([...targetSelect.options].some(o => o.value === prevValue)){
+  let optionsHtml = '';
+  tweets.forEach((t, tIdx) => {
+    const postPreview = t.text.length > 30 ? t.text.slice(0, 30) + '…' : t.text;
+    optionsHtml += `<option value="post:${tIdx}">${escapeHtml((tIdx + 1) + '. ' + postPreview)}</option>`;
+    (t.comments || []).forEach((c, cIdx) => {
+      const commentPreview = c.text.length > 24 ? c.text.slice(0, 24) + '…' : c.text;
+      optionsHtml += `<option value="comment:${tIdx}:${cIdx}">${escapeHtml('   ↳ ' + c.name + ': ' + commentPreview)}</option>`;
+    });
+  });
+  targetSelect.innerHTML = optionsHtml || '<option value="">Add a post first</option>';
+  if(tweets.length > 0 && [...targetSelect.options].some(o => o.value === prevValue)){
     targetSelect.value = prevValue;
   }
 }
@@ -1163,11 +1447,13 @@ function downloadNotifs(){
 }
 
 /* ===================== INIT ===================== */
+populateProjectSwitcher();
+populateAllCharacterPickers();
 renderProfile();
 
 tweets = [
   { text: "example", time: '00:51 · 8/20/26', image: null, likes: '', replies: '1', comments: [
-    { name: 'chrissy', handle: 'chrissybug_', avatarSrc: null, text: "adding example" }
+    { name: 'chrissy', handle: 'chrissybug_', avatarSrc: null, text: "adding example", replies: [] }
   ] }
 ];
 renderTweet();
