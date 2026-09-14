@@ -1826,7 +1826,7 @@ function render(){
   } else {
     avatarEl.textContent = name.trim().charAt(0).toUpperCase() || '?';
   }
-  document.getElementById('statusTime').textContent = document.getElementById('carrierTime').value || '9:41';
+  document.getElementById('statusTime').textContent = document.getElementById('carrierTime').value || getCurrentTimeString();
   document.getElementById('phoneScreen').classList.toggle('dark-mode', document.getElementById('threadDarkMode').checked);
 
   // message bubbles
@@ -1941,6 +1941,14 @@ function downloadPng(){
   });
 }
 
+function getCurrentTimeString(){
+  const now = new Date();
+  let h = now.getHours() % 12;
+  if(h === 0) h = 12;
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
 const ALL_TABS = ['thread', 'polaroid', 'call', 'outcall', 'group', 'journal', 'lock'];
 function switchTab(tab){
   ALL_TABS.forEach(t => {
@@ -2009,7 +2017,7 @@ function handleCallPhotoUpload(event){
 function renderCall(){
   const name = document.getElementById('callName').value || 'Unknown';
   const subtitle = document.getElementById('callSubtitle').value;
-  const time = document.getElementById('callTime').value || '9:41';
+  const time = document.getElementById('callTime').value || getCurrentTimeString();
   document.getElementById('callNameOut').textContent = name;
   document.getElementById('callSubtitleOut').textContent = subtitle;
   document.getElementById('callTimeOut').textContent = time;
@@ -2048,7 +2056,7 @@ function handleOutcallPhotoUpload(event){
 function renderOutcall(){
   const name = document.getElementById('outcallName').value || 'Unknown';
   const subtitle = document.getElementById('outcallSubtitle').value;
-  const time = document.getElementById('outcallTime').value || '9:41';
+  const time = document.getElementById('outcallTime').value || getCurrentTimeString();
   document.getElementById('outcallNameOut').textContent = name;
   document.getElementById('outcallSubtitleOut').textContent = subtitle;
   document.getElementById('outcallTimeOut').textContent = time;
@@ -2265,7 +2273,7 @@ function renderLock(){
     screen.classList.add('lock-bg-' + preset);
   }
 
-  document.getElementById('lockTimeOut').textContent = document.getElementById('lockTime').value || '9:41';
+  document.getElementById('lockTimeOut').textContent = document.getElementById('lockTime').value || getCurrentTimeString();
   document.getElementById('lockDateOut').textContent = document.getElementById('lockDate').value || '';
 
   const area = document.getElementById('lockNotifArea');
@@ -2364,6 +2372,15 @@ messages = [
   { sender: 'them', type: 'text', text: "you up?" },
   { sender: 'me', type: 'text', text: "unfortunately" }
 ];
+// set all placeholder times to the actual current time
+document.getElementById('carrierTime').value = getCurrentTimeString();
+document.getElementById('callTime').value = getCurrentTimeString();
+document.getElementById('outcallTime').value = getCurrentTimeString();
+document.getElementById('lockTime').value = getCurrentTimeString();
+document.querySelectorAll('.status-bar span:first-child').forEach(el => {
+  if(!el.id) el.textContent = getCurrentTimeString();
+});
+
 populateProjectSwitcher();
 populateAllCharacterPickers();
 render();

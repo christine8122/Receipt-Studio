@@ -494,7 +494,7 @@ queens, ny</textarea>
       <div class="row2" style="margin-top:8px;">
         <div class="field" style="margin-bottom:0;">
           <label>Time · Date</label>
-          <input type="text" id="twTime" value="00:51 · 8/20/26">
+          <input type="text" id="twTime" value="">
         </div>
         <div class="field" style="margin-bottom:0;">
           <label class="upload-drop" for="twImageUpload">Attach photo</label>
@@ -504,11 +504,11 @@ queens, ny</textarea>
       <div class="row2" style="margin-top:8px;">
         <div class="field" style="margin-bottom:0;">
           <label>Likes</label>
-          <input type="text" id="twLikes" value="2.4K">
+          <input type="text" id="twLikes" value="0">
         </div>
         <div class="field" style="margin-bottom:0;">
           <label>Replies</label>
-          <input type="text" id="twReplies" value="318">
+          <input type="text" id="twReplies" value="0">
         </div>
       </div>
       <div class="composer-footer">
@@ -886,6 +886,24 @@ function applyCharacterToNotifDraft(accountId){
   if(!c || !a) return;
   document.getElementById('notifActor').value = c.name;
   notifDraftAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+}
+
+function getCurrentTimeString(){
+  const now = new Date();
+  let h = now.getHours() % 12;
+  if(h === 0) h = 12;
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function getCurrentTweetTimeString(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  const year = String(now.getFullYear()).slice(-2);
+  return `${h}:${m} · ${month}/${day}/${year}`;
 }
 
 function switchTab(tab){
@@ -1447,12 +1465,18 @@ function downloadNotifs(){
 }
 
 /* ===================== INIT ===================== */
+// set all placeholder times to the actual current time
+document.getElementById('twTime').value = getCurrentTweetTimeString();
+document.querySelectorAll('.status-bar span:first-child').forEach(el => {
+  if(!el.id) el.textContent = getCurrentTimeString();
+});
+
 populateProjectSwitcher();
 populateAllCharacterPickers();
 renderProfile();
 
 tweets = [
-  { text: "example", time: '00:51 · 8/20/26', image: null, likes: '', replies: '1', comments: [
+  { text: "example", time: getCurrentTweetTimeString(), image: null, likes: '0', replies: '1', comments: [
     { name: 'chrissy', handle: 'chrissybug_', avatarSrc: null, text: "adding example", replies: [] }
   ] }
 ];

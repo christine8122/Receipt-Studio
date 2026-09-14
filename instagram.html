@@ -601,11 +601,11 @@ queens, ny</textarea>
     <div class="row2">
       <div class="field">
         <label>Likes</label>
-        <input type="text" id="postLikes" value="1,204" oninput="renderPost()">
+        <input type="text" id="postLikes" value="0" oninput="renderPost()">
       </div>
       <div class="field">
         <label>Comments</label>
-        <input type="text" id="postComments" value="38" oninput="renderPost()">
+        <input type="text" id="postComments" value="0" oninput="renderPost()">
       </div>
     </div>
     <div class="field">
@@ -638,9 +638,9 @@ queens, ny</textarea>
           <div class="ig-post-actions">
             <span>🤍</span><span>💬</span><span>📤</span><span class="spacer"></span><span>🔖</span>
           </div>
-          <div class="ig-post-likes" id="postLikesOut">1,204 likes</div>
+          <div class="ig-post-likes" id="postLikesOut">0 likes</div>
           <div class="ig-post-caption" id="postCaptionOut"></div>
-          <div class="ig-post-comments-link" id="postCommentsOut">View all 38 comments</div>
+          <div class="ig-post-comments-link" id="postCommentsOut"></div>
           <div class="ig-post-time" id="postTimeOut">2 hours ago</div>
         </div>
       </div>
@@ -884,6 +884,14 @@ queens, ny</textarea>
 </div>
 
 <script>
+function getCurrentTimeString(){
+  const now = new Date();
+  let h = now.getHours() % 12;
+  if(h === 0) h = 12;
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
 function switchTab(tab){
   const tabs = ['profile','post','chats','stories','notes'];
   tabs.forEach(t => {
@@ -1217,7 +1225,7 @@ function renderPost(){
   const comments = document.getElementById('postComments').value;
   document.getElementById('postLikesOut').textContent = likes + ' likes';
   document.getElementById('postCaptionOut').innerHTML = `<b>${escapeHtml(username)}</b>${escapeHtml(document.getElementById('postCaption').value)}`;
-  document.getElementById('postCommentsOut').textContent = comments ? `View all ${comments} comments` : '';
+  document.getElementById('postCommentsOut').textContent = (comments && comments !== '0') ? `View all ${comments} comments` : '';
   document.getElementById('postTimeOut').textContent = document.getElementById('postTime').value;
 }
 
@@ -1520,6 +1528,11 @@ function addNotesToStoryboard(btnEl){
   const frame = document.querySelector('#tab-notes .phone-frame');
   html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Notes', btnEl));
 }
+
+// set all decorative status bar times to the actual current time
+document.querySelectorAll('.status-bar span:first-child').forEach(el => {
+  if(!el.id) el.textContent = getCurrentTimeString();
+});
 
 populateProjectSwitcher();
 populateAllCharacterPickers();
