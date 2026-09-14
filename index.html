@@ -774,81 +774,6 @@
     cursor:pointer;
   }
 
-  /* --- social post tab --- */
-  .social-stage{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height: 560px;
-    padding: 40px;
-  }
-  .social-card{
-    width: 360px;
-    max-width: 100%;
-    background: #fff;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    color: #14171a;
-    font-family: 'Proxima Nova', 'Poppins', -apple-system, 'Segoe UI', sans-serif;
-  }
-  .social-card .sc-header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding: 14px 14px 8px;
-  }
-  .social-card .sc-avatar{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    background: linear-gradient(135deg,#8e8e93,#57575b);
-    flex-shrink:0;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#fff;
-    font-weight:700;
-    font-size:15px;
-  }
-  .social-card .sc-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .social-card .sc-names{ flex:1; min-width:0; }
-  .social-card .sc-name{ font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:4px; }
-  .social-card .sc-handle{ font-size:13px; color:#697580; }
-  .social-card .sc-body{ padding: 0 14px 10px; font-size:15px; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
-  .social-card .sc-image{ width:100%; display:block; max-height:340px; object-fit:cover; }
-  .social-card .sc-stats{
-    display:flex;
-    gap:20px;
-    padding: 10px 14px 14px;
-    font-size:13px;
-    color:#697580;
-    border-top: 1px solid #eef1f3;
-    margin-top: 6px;
-  }
-  .social-card.theme-ig .sc-header{ border-bottom:1px solid #efefef; padding-bottom:10px; }
-  .social-card.theme-ig .sc-name{ font-size:14px; }
-  .social-card.theme-ig .sc-handle{ display:none; }
-  .social-card.theme-ig .sc-actions{
-    display:flex;
-    gap:14px;
-    padding: 10px 14px 2px;
-    font-size:20px;
-  }
-  .social-card.theme-ig .sc-likes{ padding: 4px 14px 0; font-weight:700; font-size:13.5px; }
-  .social-card.theme-ig .sc-caption{ padding: 4px 14px 4px; font-size:13.5px; line-height:1.4; }
-  .social-card.theme-ig .sc-caption b{ margin-right:5px; }
-  .social-card.theme-ig .sc-time{ padding: 2px 14px 14px; font-size:11px; color:#8a8a8e; text-transform:uppercase; letter-spacing:0.03em; }
-  .social-card.theme-ig .sc-stats, .social-card.theme-ig .sc-body{ display:none; }
-  .social-card.theme-x .sc-actions, .social-card.theme-x .sc-likes, .social-card.theme-x .sc-caption, .social-card.theme-x .sc-time{ display:none; }
-
-  .social-card.sc-dark{ background:#000; color:#e7e9ea; }
-  .social-card.sc-dark .sc-handle{ color:#71767b; }
-  .social-card.sc-dark .sc-stats{ color:#71767b; border-top-color:#2f3336; }
-  .social-card.sc-dark.theme-ig .sc-header{ border-bottom-color:#262626; }
-  .social-card.sc-dark.theme-ig .sc-time{ color:#a8a8a8; }
-
   /* --- incoming call tab --- */
   .call-screen{
     background: #16171b;
@@ -1119,7 +1044,7 @@
     .tab-btn{ font-size:11.5px; padding:8px 10px; }
     .panel{ padding:16px; }
     .row2, .row3{ grid-template-columns: 1fr; }
-    .polaroid-stage, .social-stage, .journal-stage{ padding:16px; min-height:auto; }
+    .polaroid-stage, .journal-stage{ padding:16px; min-height:auto; }
   }
 </style>
 </head>
@@ -1143,7 +1068,6 @@
 <div class="tabbar">
   <button class="tab-btn active" id="tabbtn-thread" onclick="switchTab('thread')">Text Thread</button>
   <button class="tab-btn" id="tabbtn-polaroid" onclick="switchTab('polaroid')">Polaroid</button>
-  <button class="tab-btn" id="tabbtn-social" onclick="switchTab('social')">Social Post</button>
   <button class="tab-btn" id="tabbtn-call" onclick="switchTab('call')">Incoming Call</button>
   <button class="tab-btn" id="tabbtn-outcall" onclick="switchTab('outcall')">Outgoing Call</button>
   <button class="tab-btn" id="tabbtn-lock" onclick="switchTab('lock')">Lock Screen</button>
@@ -1331,95 +1255,6 @@
     <p class="hint">Upload a photo, add a caption, adjust the tilt — then download.</p>
   </div>
 
-</div>
-
-<!-- SOCIAL POST TAB -->
-<div class="layout" id="tab-social" style="display:none;">
-  <div class="panel">
-    <p class="section-label">Platform</p>
-    <div class="field">
-      <div class="style-toggle">
-        <button id="btn-platform-x" class="active" onclick="setSocialPlatform('x')">X / Twitter</button>
-        <button id="btn-platform-ig" onclick="setSocialPlatform('ig')">Instagram</button>
-      </div>
-    </div>
-    <div class="field">
-      <label class="checkbox-row">
-        <input type="checkbox" id="socialDarkMode" onchange="renderSocial()">
-        Dark mode
-      </label>
-    </div>
-
-    <p class="section-label">Account</p>
-    <div class="row2">
-      <div class="field">
-        <label>Display name</label>
-        <input type="text" id="socialName" value="Peter Parker" oninput="renderSocial()">
-      </div>
-      <div class="field">
-        <label>Handle</label>
-        <input type="text" id="socialHandle" value="spidermanparker" oninput="renderSocial()">
-      </div>
-    </div>
-    <div class="field">
-      <label class="upload-drop" for="socialAvatarUpload">Upload avatar (optional)</label>
-      <input type="file" id="socialAvatarUpload" accept="image/*" style="display:none;" onchange="handleSocialAvatarUpload(event)">
-    </div>
-
-    <p class="section-label">Post</p>
-    <div class="field">
-      <label id="socialBodyLabel">Post text</label>
-      <textarea id="socialBody" rows="4" oninput="renderSocial()">this city never sleeps and neither do i apparently</textarea>
-    </div>
-    <div class="field">
-      <label class="upload-drop" for="socialImageUpload">Attach photo (optional)</label>
-      <input type="file" id="socialImageUpload" accept="image/*" style="display:none;" onchange="handleSocialImageUpload(event)">
-    </div>
-
-    <p class="section-label">Stats & time</p>
-    <div class="row2">
-      <div class="field">
-        <label id="socialStat1Label">Likes</label>
-        <input type="text" id="socialStat1" value="2.4K" oninput="renderSocial()">
-      </div>
-      <div class="field">
-        <label id="socialStat2Label">Replies</label>
-        <input type="text" id="socialStat2" value="318" oninput="renderSocial()">
-      </div>
-    </div>
-    <div class="field">
-      <label>Timestamp</label>
-      <input type="text" id="socialTime" value="11:47 PM · Aug 6, 2026" oninput="renderSocial()">
-    </div>
-
-    <div class="download-bar">
-      <button class="btn btn-download" onclick="downloadSocial()">Download PNG</button>
-      <button class="btn btn-storyboard" onclick="addSocialToStoryboard(this)">+ Add to Storyboard</button>
-    </div>
-  </div>
-
-  <div class="preview-wrap">
-    <div class="social-stage" id="socialStage">
-      <div class="social-card theme-x" id="socialCard">
-        <div class="sc-header">
-          <div class="sc-avatar" id="socialAvatar">P</div>
-          <div class="sc-names">
-            <div class="sc-name" id="socialNameOut">Peter Parker</div>
-            <div class="sc-handle" id="socialHandleOut">@spidermanparker</div>
-          </div>
-        </div>
-        <div class="sc-body" id="socialBodyOut"></div>
-        <img class="sc-image" id="socialImageOut" style="display:none;">
-        <div class="sc-stats" id="socialStatsOut"></div>
-
-        <div class="sc-actions">🤍 💬 📤 🔖</div>
-        <div class="sc-likes" id="socialLikesOut"></div>
-        <div class="sc-caption" id="socialCaptionOut"></div>
-        <div class="sc-time" id="socialTimeOut"></div>
-      </div>
-    </div>
-    <p class="hint">Switch platform, fill in the post — the card updates live.</p>
-  </div>
 </div>
 
 <!-- INCOMING CALL TAB -->
@@ -2106,7 +1941,7 @@ function downloadPng(){
   });
 }
 
-const ALL_TABS = ['thread', 'polaroid', 'social', 'call', 'outcall', 'group', 'journal', 'lock'];
+const ALL_TABS = ['thread', 'polaroid', 'call', 'outcall', 'group', 'journal', 'lock'];
 function switchTab(tab){
   ALL_TABS.forEach(t => {
     const panel = document.getElementById('tab-' + t);
@@ -2157,79 +1992,6 @@ function downloadPolaroid(){
   const stage = document.getElementById('polaroidStage');
   html2canvas(stage, { scale: 3, backgroundColor: null }).then(canvas => {
         triggerImageDownload(canvas.toDataURL('image/png'), 'polaroid.png');
-  });
-}
-
-/* ===================== SOCIAL POST ===================== */
-let socialPlatform = 'x';
-let socialAvatarSrc = null;
-let socialImageSrc = null;
-
-function setSocialPlatform(p){
-  socialPlatform = p;
-  document.getElementById('btn-platform-x').classList.toggle('active', p==='x');
-  document.getElementById('btn-platform-ig').classList.toggle('active', p==='ig');
-  document.getElementById('socialStat1Label').textContent = (p==='x') ? 'Likes' : 'Likes';
-  document.getElementById('socialStat2Label').textContent = (p==='x') ? 'Replies' : 'Comments';
-  document.getElementById('socialBodyLabel').textContent = (p==='x') ? 'Post text' : 'Caption';
-  const card = document.getElementById('socialCard');
-  card.classList.toggle('theme-x', p==='x');
-  card.classList.toggle('theme-ig', p==='ig');
-  renderSocial();
-}
-
-function handleSocialAvatarUpload(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { socialAvatarSrc = e.target.result; renderSocial(); };
-  reader.readAsDataURL(file);
-}
-
-function handleSocialImageUpload(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { socialImageSrc = e.target.result; renderSocial(); };
-  reader.readAsDataURL(file);
-}
-
-function renderSocial(){
-  const name = document.getElementById('socialName').value || 'Name';
-  const handle = document.getElementById('socialHandle').value || 'handle';
-  const body = document.getElementById('socialBody').value;
-  const stat1 = document.getElementById('socialStat1').value;
-  const stat2 = document.getElementById('socialStat2').value;
-  const time = document.getElementById('socialTime').value;
-  document.getElementById('socialCard').classList.toggle('sc-dark', document.getElementById('socialDarkMode').checked);
-
-  document.getElementById('socialNameOut').textContent = name;
-  document.getElementById('socialHandleOut').textContent = '@' + handle.replace(/^@/,'');
-
-  const avatarEl = document.getElementById('socialAvatar');
-  avatarEl.innerHTML = socialAvatarSrc ? `<img src="${socialAvatarSrc}">` : (name.trim().charAt(0).toUpperCase() || '?');
-
-  document.getElementById('socialBodyOut').textContent = body;
-  document.getElementById('socialCaptionOut').innerHTML = `<b>${escapeHtml(handle.replace(/^@/,''))}</b>${escapeHtml(body)}`;
-
-  const imgEl = document.getElementById('socialImageOut');
-  if(socialImageSrc){
-    imgEl.src = socialImageSrc;
-    imgEl.style.display = 'block';
-  } else {
-    imgEl.style.display = 'none';
-  }
-
-  document.getElementById('socialStatsOut').innerHTML =
-    `<span>💬 ${escapeHtml(stat2)}</span><span>🔁 ${Math.max(1, Math.round((parseFloat(stat1)||0)/6))}</span><span>❤️ ${escapeHtml(stat1)}</span>`;
-  document.getElementById('socialLikesOut').textContent = stat1 + ' likes';
-  document.getElementById('socialTimeOut').textContent = time;
-}
-
-function downloadSocial(){
-  const stage = document.getElementById('socialStage');
-  html2canvas(stage, { scale: 3, backgroundColor: null }).then(canvas => {
-        triggerImageDownload(canvas.toDataURL('image/png'), 'social-post.png');
   });
 }
 
@@ -2576,10 +2338,6 @@ function addPolaroidToStoryboard(btnEl){
   const stage = document.getElementById('polaroidStage');
   html2canvas(stage, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'Polaroid', btnEl));
 }
-function addSocialToStoryboard(btnEl){
-  const stage = document.getElementById('socialStage');
-  html2canvas(stage, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'Social Post', btnEl));
-}
 function addCallToStoryboard(btnEl){
   const frame = document.querySelector('#tab-call .phone-frame');
   html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'Incoming Call', btnEl));
@@ -2610,7 +2368,6 @@ populateProjectSwitcher();
 populateAllCharacterPickers();
 render();
 renderPolaroid();
-renderSocial();
 renderCall();
 renderOutcall();
 

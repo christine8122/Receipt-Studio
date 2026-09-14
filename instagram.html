@@ -254,6 +254,30 @@
   .ig-grid-cell{ aspect-ratio: 1; background:#e8e8e8; overflow:hidden; }
   .ig-grid-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
 
+  /* ============ POST ============ */
+  .ig-post-body{ flex:1; overflow-y:auto; }
+  .ig-post-header{ display:flex; align-items:center; gap:10px; padding:10px 12px; }
+  .ig-post-avatar{
+    width:34px; height:34px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    background: linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px;
+  }
+  .ig-post-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .ig-post-names{ flex:1; min-width:0; }
+  .ig-post-username{ font-size:13px; font-weight:700; color:#000; display:flex; align-items:center; gap:3px; }
+  .ig-post-location{ font-size:11px; color:#000; }
+  .ig-post-more{ font-size:16px; color:#000; letter-spacing:1px; }
+  .ig-post-photo{ width:100%; aspect-ratio:1; background:#e8e8e8; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .ig-post-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ig-post-photo-placeholder{ font-family:'JetBrains Mono', monospace; font-size:11px; color:#9a9a9a; text-align:center; padding:0 20px; }
+  .ig-post-actions{ display:flex; align-items:center; gap:14px; padding:10px 12px 2px; font-size:21px; }
+  .ig-post-actions .spacer{ flex:1; }
+  .ig-post-likes{ padding:6px 12px 0; font-weight:700; font-size:13.5px; color:#000; }
+  .ig-post-caption{ padding:4px 12px 2px; font-size:13.5px; color:#000; line-height:1.4; }
+  .ig-post-caption b{ margin-right:5px; }
+  .ig-post-comments-link{ padding:2px 12px 2px; font-size:13px; color:#8a8a8e; }
+  .ig-post-time{ padding:4px 12px 14px; font-size:10.5px; color:#8a8a8e; text-transform:uppercase; letter-spacing:0.04em; }
+
   /* ============ CHATS ============ */
   .ig-chat-header{
     display:flex; align-items:center; gap:10px; padding:8px 12px 12px; border-bottom:1px solid #efefef; color:#000;
@@ -366,6 +390,14 @@
   .phone-screen.dark-mode .ig-tabicons span.sel{ border-top-color:#fff; }
   .phone-screen.dark-mode .ig-grid-cell{ background:#1a1a1a; }
 
+  /* post */
+  .phone-screen.dark-mode .ig-post-username{ color:#fff; }
+  .phone-screen.dark-mode .ig-post-location{ color:#e0e0e0; }
+  .phone-screen.dark-mode .ig-post-more{ color:#fff; }
+  .phone-screen.dark-mode .ig-post-photo{ background:#1a1a1a; }
+  .phone-screen.dark-mode .ig-post-likes{ color:#fff; }
+  .phone-screen.dark-mode .ig-post-caption{ color:#fff; }
+
   /* chats */
   .phone-screen.dark-mode .ig-chat-header{ border-bottom-color:#262626; color:#fff; }
   .phone-screen.dark-mode .ig-chat-status{ color:#a8a8a8; }
@@ -411,6 +443,7 @@
 
 <div class="tabbar">
   <button class="tab-btn active" id="tabbtn-profile" onclick="switchTab('profile')">Profile</button>
+  <button class="tab-btn" id="tabbtn-post" onclick="switchTab('post')">Post</button>
   <button class="tab-btn" id="tabbtn-chats" onclick="switchTab('chats')">Chats</button>
   <button class="tab-btn" id="tabbtn-stories" onclick="switchTab('stories')">Stories</button>
   <button class="tab-btn" id="tabbtn-notes" onclick="switchTab('notes')">Notes</button>
@@ -516,6 +549,103 @@ queens, ny</textarea>
       </div>
     </div>
     <p class="hint">Add a few grid photos to fill it out — it renders exactly like an IG profile.</p>
+  </div>
+</div>
+
+<!-- POST TAB -->
+<div class="layout" id="tab-post" style="display:none;">
+  <div class="panel">
+    <p class="section-label">Poster</p>
+    <div class="field">
+      <label>Character (optional)</label>
+      <select class="styled-select" id="postCharacterPicker" onchange="onCharacterPicked('post', this.value)">
+        <option value="">— pick a saved character —</option>
+      </select>
+    </div>
+    <div class="field" id="postAccountField" style="display:none;">
+      <label>Which of their IG accounts?</label>
+      <select class="styled-select" id="postAccountPicker" onchange="applyCharacterToPost(this.value)">
+        <option value="">— pick an account —</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="postUsername" value="peter.parker" oninput="renderPost()">
+      </div>
+      <div class="field">
+        <label>Location (optional)</label>
+        <input type="text" id="postLocation" value="" placeholder="e.g. Queens, NY" oninput="renderPost()">
+      </div>
+    </div>
+    <div class="field">
+      <label class="upload-drop" for="postAvatarUpload">Upload avatar</label>
+      <input type="file" id="postAvatarUpload" accept="image/*" style="display:none;" onchange="handlePostAvatarUpload(event)">
+    </div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="postDarkMode" onchange="renderPost()">
+        Dark mode
+      </label>
+    </div>
+
+    <p class="section-label">Post</p>
+    <div class="field">
+      <label class="upload-drop" for="postPhotoUpload">Upload post photo</label>
+      <input type="file" id="postPhotoUpload" accept="image/*" style="display:none;" onchange="handlePostPhotoUpload(event)">
+    </div>
+    <div class="field">
+      <label>Caption</label>
+      <textarea id="postCaption" rows="3" oninput="renderPost()">friday nights hit different</textarea>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Likes</label>
+        <input type="text" id="postLikes" value="1,204" oninput="renderPost()">
+      </div>
+      <div class="field">
+        <label>Comments</label>
+        <input type="text" id="postComments" value="38" oninput="renderPost()">
+      </div>
+    </div>
+    <div class="field">
+      <label>Timestamp</label>
+      <input type="text" id="postTime" value="2 hours ago" oninput="renderPost()">
+    </div>
+
+    <div class="download-bar">
+      <button class="btn btn-download" onclick="downloadPost()">Download PNG</button>
+      <button class="btn btn-storyboard" onclick="addPostToStoryboard(this)">+ Add to Storyboard</button>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="phone-frame">
+      <div class="phone-screen" id="postScreen">
+        <div class="status-bar"><span>9:41</span><span>●●●●</span></div>
+        <div class="ig-post-body">
+          <div class="ig-post-header">
+            <div class="ig-post-avatar" id="postAvatarOut">P</div>
+            <div class="ig-post-names">
+              <div class="ig-post-username" id="postUsernameOut">peter.parker</div>
+              <div class="ig-post-location" id="postLocationOut" style="display:none;"></div>
+            </div>
+            <div class="ig-post-more">•••</div>
+          </div>
+          <div class="ig-post-photo" id="postPhotoOut">
+            <div class="ig-post-photo-placeholder">upload a photo to see it here</div>
+          </div>
+          <div class="ig-post-actions">
+            <span>🤍</span><span>💬</span><span>📤</span><span class="spacer"></span><span>🔖</span>
+          </div>
+          <div class="ig-post-likes" id="postLikesOut">1,204 likes</div>
+          <div class="ig-post-caption" id="postCaptionOut"></div>
+          <div class="ig-post-comments-link" id="postCommentsOut">View all 38 comments</div>
+          <div class="ig-post-time" id="postTimeOut">2 hours ago</div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">A single feed post — upload a photo, write a caption, set the stats.</p>
   </div>
 </div>
 
@@ -755,7 +885,7 @@ queens, ny</textarea>
 
 <script>
 function switchTab(tab){
-  const tabs = ['profile','chats','stories','notes'];
+  const tabs = ['profile','post','chats','stories','notes'];
   tabs.forEach(t => {
     document.getElementById('tab-' + t).style.display = (t === tab) ? 'grid' : 'none';
     document.getElementById('tabbtn-' + t).classList.toggle('active', t === tab);
@@ -833,7 +963,7 @@ function populateCharacterPicker(selectId){
 }
 
 function populateAllCharacterPickers(){
-  ['profile','chats','stories','notes'].forEach(tab => {
+  ['profile','post','chats','stories','notes'].forEach(tab => {
     populateCharacterPicker(tab + 'CharacterPicker');
     const accountField = document.getElementById(tab + 'AccountField');
     if(accountField) accountField.style.display = 'none';
@@ -1029,6 +1159,72 @@ function downloadProfile(){
   const frame = document.querySelector('#tab-profile .phone-frame');
   html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
         triggerImageDownload(canvas.toDataURL('image/png'), 'instagram-profile.png');
+  });
+}
+
+/* ===================== POST ===================== */
+let postAvatarSrc = null;
+let postPhotoSrc = null;
+
+function applyCharacterToPost(accountId){
+  if(!accountId) return;
+  const picker = document.getElementById('postAccountPicker');
+  const c = getCharacterById(picker.dataset.charId);
+  const a = c ? c.instagramAccounts.find(a => a.id === accountId) : null;
+  if(!c || !a) return;
+  document.getElementById('postUsername').value = a.username || c.name;
+  postAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+  renderPost();
+}
+
+function handlePostAvatarUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { postAvatarSrc = e.target.result; renderPost(); };
+  reader.readAsDataURL(file);
+}
+
+function handlePostPhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { postPhotoSrc = e.target.result; renderPost(); };
+  reader.readAsDataURL(file);
+}
+
+function renderPost(){
+  const username = document.getElementById('postUsername').value || 'username';
+  const location = document.getElementById('postLocation').value;
+  document.getElementById('postScreen').classList.toggle('dark-mode', document.getElementById('postDarkMode').checked);
+
+  document.getElementById('postUsernameOut').textContent = username;
+  const locEl = document.getElementById('postLocationOut');
+  if(location){
+    locEl.textContent = location;
+    locEl.style.display = 'block';
+  } else {
+    locEl.style.display = 'none';
+  }
+
+  const avatarEl = document.getElementById('postAvatarOut');
+  avatarEl.innerHTML = postAvatarSrc ? `<img src="${postAvatarSrc}">` : (username.trim().charAt(0).toUpperCase() || '?');
+
+  const photoEl = document.getElementById('postPhotoOut');
+  photoEl.innerHTML = postPhotoSrc ? `<img src="${postPhotoSrc}">` : '<div class="ig-post-photo-placeholder">upload a photo to see it here</div>';
+
+  const likes = document.getElementById('postLikes').value;
+  const comments = document.getElementById('postComments').value;
+  document.getElementById('postLikesOut').textContent = likes + ' likes';
+  document.getElementById('postCaptionOut').innerHTML = `<b>${escapeHtml(username)}</b>${escapeHtml(document.getElementById('postCaption').value)}`;
+  document.getElementById('postCommentsOut').textContent = comments ? `View all ${comments} comments` : '';
+  document.getElementById('postTimeOut').textContent = document.getElementById('postTime').value;
+}
+
+function downloadPost(){
+  const frame = document.querySelector('#tab-post .phone-frame');
+  html2canvas(frame, { scale: 3, backgroundColor: null }).then(canvas => {
+    triggerImageDownload(canvas.toDataURL('image/png'), 'instagram-post.png');
   });
 }
 
@@ -1308,6 +1504,10 @@ function addProfileToStoryboard(btnEl){
   const frame = document.querySelector('#tab-profile .phone-frame');
   html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Profile', btnEl));
 }
+function addPostToStoryboard(btnEl){
+  const frame = document.querySelector('#tab-post .phone-frame');
+  html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG Post', btnEl));
+}
 function addChatToStoryboard(btnEl){
   const frame = document.querySelector('#tab-chats .phone-frame');
   html2canvas(frame, { scale: 2, backgroundColor: null }).then(canvas => pushPanelToStoryboard(canvas, 'IG DM', btnEl));
@@ -1324,6 +1524,7 @@ function addNotesToStoryboard(btnEl){
 populateProjectSwitcher();
 populateAllCharacterPickers();
 renderProfile();
+renderPost();
 renderChat();
 renderStory();
 renderNotes();
