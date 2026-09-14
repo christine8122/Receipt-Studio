@@ -108,8 +108,15 @@
 
     <div id="projectListWrap" style="margin-top:18px;"></div>
 
+    <p class="section-label" style="margin-top:20px;">Backup</p>
+    <button class="btn btn-outline" style="width:100%;" onclick="exportAllProjects()">⬇ Export all projects</button>
+    <div class="field" style="margin-top:10px; margin-bottom:0;">
+      <label class="upload-drop" for="importBackupFile">⬆ Import backup file</label>
+      <input type="file" id="importBackupFile" accept=".json,application/json" style="display:none;" onchange="handleImportFile(event)">
+    </div>
+
     <p class="hint" style="margin-top:16px;">
-      The active project's characters show up as "Load character" options on the Main, Instagram, and X/Twitter tools pages, and each project gets its own Storyboard.
+      The active project's characters show up as "Load character" options on the Main, Instagram, and X/Twitter tools pages, and each project gets its own Storyboard. Since everything lives in this browser's local storage, export a backup now and then — especially before clearing browser data or switching browsers/devices.
     </p>
   </div>
 
@@ -196,6 +203,110 @@ function deleteProject(id){
   if(getActiveProjectId() === id){
     setActiveProjectId(projects.length ? projects[0].id : '');
   }
+  render();
+}
+
+function getStoryboardForProject(id){
+  try { return JSON.parse(localStorage.getItem('receipts_storyboard_' + id) || '[]'); } catch(e){ return []; }
+}
+
+function downloadBackupFile(data, filename){
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function buildBackup(projects){
+  const storyboards = {};
+  projects.forEach(p => { storyboards[p.id] = getStoryboardForProject(p.id); });
+  return {
+    receiptsBackupVersion: 1,
+    exportedAt: new Date().toISOString(),
+    projects: projects,
+    storyboards: storyboards
+  };
+}
+
+function exportAllProjects(){
+  const projects = loadProjectsData();
+  if(projects.length === 0){ alert('No projects to export yet.'); return; }
+  downloadBackupFile(buildBackup(projects), 'receipts-backup-all.json');
+}
+
+function exportProject(id){
+  const projects = loadProjectsData();
+  const proj = projects.find(p => p.id === id);
+  if(!proj) return;
+  const safeName = proj.name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'project';
+  downloadBackupFile(buildBackup([proj]), `receipts-backup-${safeName}.json`);
+}
+
+function handleImportFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch(err){
+      alert('That file isn\'t valid JSON — could not read it as a Receipts backup.');
+      event.target.value = '';
+      return;
+    }
+    if(!data || !Array.isArray(data.projects)){
+      alert('That doesn\'t look like a Receipts backup file.');
+      event.target.value = '';
+      return;
+    }
+    importBackup(data);
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function importBackup(data){
+  const existingProjects = loadProjectsData();
+  const existingIds = new Set(existingProjects.map(p => p.id));
+  const incoming = data.projects;
+  const conflicting = incoming.filter(p => existingIds.has(p.id));
+
+  let overwrite = true;
+  if(conflicting.length > 0){
+    overwrite = confirm(
+      `${conflicting.length} project${conflicting.length > 1 ? 's' : ''} in this backup already exist here (same project). ` +
+      `Click OK to overwrite ${conflicting.length > 1 ? 'them' : 'it'} with the backup version, or Cancel to skip ${conflicting.length > 1 ? 'those' : 'it'} and only import new projects.`
+    );
+  }
+
+  let importedCount = 0;
+  incoming.forEach(incomingProj => {
+    const existingIdx = existingProjects.findIndex(p => p.id === incomingProj.id);
+    if(existingIdx > -1){
+      if(overwrite){
+        existingProjects[existingIdx] = incomingProj;
+        importedCount++;
+      }
+    } else {
+      existingProjects.push(incomingProj);
+      importedCount++;
+    }
+
+    if(existingIdx === -1 || overwrite){
+      const panels = (data.storyboards && data.storyboards[incomingProj.id]) || [];
+      try { localStorage.setItem('receipts_storyboard_' + incomingProj.id, JSON.stringify(panels)); } catch(e){}
+    }
+  });
+
+  saveProjectsData(existingProjects);
+  if(!getActiveProjectId() && existingProjects.length > 0){
+    setActiveProjectId(existingProjects[0].id);
+  }
+  alert(`Imported ${importedCount} project${importedCount === 1 ? '' : 's'}.`);
   render();
 }
 
@@ -362,6 +473,7 @@ function render(){
     <div class="project-row ${p.id === activeId ? 'active' : ''}">
       <span class="pname">${escapeHtml(p.name)}</span>
       ${p.id === activeId ? '<span class="ptag">ACTIVE</span>' : `<button class="btn-small" onclick="selectProject('${p.id}')">Use</button>`}
+      <button class="btn-small" onclick="exportProject('${p.id}')" title="Export this project">⬇</button>
       <button class="btn-small danger" onclick="deleteProject('${p.id}')">✕</button>
     </div>
   `).join('');
