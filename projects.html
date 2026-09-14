@@ -51,8 +51,8 @@
   .field input:focus{ outline:none; border-color: var(--accent-dim); }
   .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .btn{ font-family:inherit; font-size:13px; font-weight:600; padding:9px 16px; border-radius:7px; border:none; cursor:pointer; }
-  .btn-accent{ background: var(--accent); color:#fff; width:100%; padding:12px; font-size:14px; }
-  .btn-accent:hover{ background:#6366f1; }
+  .btn-accent{ background: var(--accent-dim); color:#fff; width:100%; padding:12px; font-size:14px; }
+  .btn-accent:hover{ background:#4f46e5; }
   .btn-outline{ background:none; border:1px solid var(--line); color: var(--ink-dim); padding:10px; font-size:13px; }
   .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
   .btn-small{ font-family:inherit; font-size:11.5px; padding:6px 10px; border-radius:6px; border:1px solid var(--line); background: var(--panel-2); color: var(--ink-dim); cursor:pointer; }
@@ -106,8 +106,8 @@
     <span class="brand-sub">projects &amp; reusable characters</span>
     <a class="nav-link" href="home.html">Home</a>
     <div class="theme-toggle" id="themeToggle">
-      <button id="btn-theme-light" onclick="setTheme('light')">☀️ Light</button>
-      <button id="btn-theme-dark" onclick="setTheme('dark')">🌙 Dark</button>
+      <button id="btn-theme-light" onclick="setSiteTheme('light')">☀️ Light</button>
+      <button id="btn-theme-dark" onclick="setSiteTheme('dark')">🌙 Dark</button>
     </div>
     <a class="nav-link" href="index.html">Main tools</a>
     <a class="nav-link" href="instagram.html">Instagram tools</a>
@@ -144,17 +144,17 @@
 <script>
 const SITE_THEME_KEY = 'receipts_site_theme_v1';
 
-function setTheme(theme){
+function setSiteTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('btn-theme-light').classList.toggle('active', theme === 'light');
   document.getElementById('btn-theme-dark').classList.toggle('active', theme === 'dark');
   try { localStorage.setItem(SITE_THEME_KEY, theme); } catch(e){}
 }
 
-function initTheme(){
+function initSiteTheme(){
   let theme = 'dark';
   try { theme = localStorage.getItem(SITE_THEME_KEY) || 'dark'; } catch(e){}
-  setTheme(theme);
+  setSiteTheme(theme);
 }
 
 const PROJECTS_KEY = 'receipts_projects_v1';
@@ -173,10 +173,10 @@ function saveProjectsData(projects){
   try { localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects)); } catch(e){ alert('Could not save — storage may be full.'); }
 }
 function getActiveProjectId(){
-  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+  try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || ''; } catch(e){ return ''; }
 }
 function setActiveProjectId(id){
-  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+  try { localStorage.setItem(ACTIVE_PROJECT_KEY, id || ''); } catch(e){}
 }
 function migrateCharacter(c){
   // backward compatibility for characters saved before multi-account support
@@ -622,7 +622,7 @@ function render(){
   renderAccountLists();
 }
 
-initTheme();
+initSiteTheme();
 render();
 </script>
 

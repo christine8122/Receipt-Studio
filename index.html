@@ -347,10 +347,10 @@
   }
   .btn-outline:hover{ color: var(--ink); border-color: var(--accent-dim); }
   .btn-accent{
-    background: var(--accent);
+    background: var(--accent-dim);
     color: #fff;
   }
-  .btn-accent:hover{ background:#6366f1; }
+  .btn-accent:hover{ background:#4f46e5; }
 
   .msg-list{
     display:flex;
@@ -1066,6 +1066,12 @@
     .row2, .row3{ grid-template-columns: 1fr; }
     .polaroid-stage, .journal-stage{ padding:16px; min-height:auto; }
   }
+
+  /* light-mode fixes: these chrome elements used white-tint overlays that assumed a dark background */
+  html[data-theme="light"] .sender-toggle button.active-me{ color: #0a4f9e; }
+  html[data-theme="light"] .tag.me{ color: #0a4f9e; }
+  html[data-theme="light"] .sender-toggle button.active-them{ background: rgba(0,0,0,0.045); }
+  html[data-theme="light"] .tag.them{ background: rgba(0,0,0,0.06); }
 </style>
 </head>
 <body>
@@ -1079,8 +1085,8 @@
     <span class="brand-sub">fake proof for your fic → export .png</span>
     <a class="nav-link" href="home.html">Home</a>
     <div class="theme-toggle" id="themeToggle">
-      <button id="btn-theme-light" onclick="setTheme('light')">☀️ Light</button>
-      <button id="btn-theme-dark" onclick="setTheme('dark')">🌙 Dark</button>
+      <button id="btn-theme-light" onclick="setSiteTheme('light')">☀️ Light</button>
+      <button id="btn-theme-dark" onclick="setSiteTheme('dark')">🌙 Dark</button>
     </div>
     <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
     <a class="nav-link" href="projects.html">Projects →</a>
@@ -1594,17 +1600,17 @@ today was... a lot.</div>
 /* ===================== PROJECTS / CHARACTERS (shared across pages) ===================== */
 const SITE_THEME_KEY = 'receipts_site_theme_v1';
 
-function setTheme(theme){
+function setSiteTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('btn-theme-light').classList.toggle('active', theme === 'light');
   document.getElementById('btn-theme-dark').classList.toggle('active', theme === 'dark');
   try { localStorage.setItem(SITE_THEME_KEY, theme); } catch(e){}
 }
 
-function initTheme(){
+function initSiteTheme(){
   let theme = 'dark';
   try { theme = localStorage.getItem(SITE_THEME_KEY) || 'dark'; } catch(e){}
-  setTheme(theme);
+  setSiteTheme(theme);
 }
 
 const PROJECTS_KEY = 'receipts_projects_v1';
@@ -1614,10 +1620,10 @@ function loadProjectsData(){
   try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); } catch(e){ return []; }
 }
 function getActiveProjectId(){
-  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+  try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || ''; } catch(e){ return ''; }
 }
 function setActiveProjectId(id){
-  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+  try { localStorage.setItem(ACTIVE_PROJECT_KEY, id || ''); } catch(e){}
 }
 function getActiveProject(){
   const id = getActiveProjectId();
@@ -2440,7 +2446,7 @@ document.querySelectorAll('.status-bar span:first-child').forEach(el => {
 
 applyDarkModePrefs(['threadDarkMode', 'groupLightMode']);
 
-initTheme();
+initSiteTheme();
 populateProjectSwitcher();
 populateAllCharacterPickers();
 render();

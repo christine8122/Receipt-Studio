@@ -96,8 +96,8 @@
     color: var(--ink); padding: 9px 11px; font-size: 14px; font-family: inherit; resize: vertical;
   }
   .btn{ font-family: inherit; font-size: 13px; font-weight:600; padding: 9px 16px; border-radius: 7px; border: none; cursor: pointer; }
-  .btn-accent{ background: var(--accent); color: #fff; width:100%; padding:12px; font-size:14px; }
-  .btn-accent:hover{ background:#6366f1; }
+  .btn-accent{ background: var(--accent-dim); color: #fff; width:100%; padding:12px; font-size:14px; }
+  .btn-accent:hover{ background:#4f46e5; }
   .btn-outline{
     background:none; border:1px solid var(--line); color: var(--ink-dim); width:100%; padding:10px; font-size:13px; margin-top:8px;
   }
@@ -274,8 +274,8 @@
     <span class="brand-sub">arrange your panels into a scene</span>
     <a class="nav-link" href="home.html">Home</a>
     <div class="theme-toggle" id="themeToggle">
-      <button id="btn-theme-light" onclick="setTheme('light')">☀️ Light</button>
-      <button id="btn-theme-dark" onclick="setTheme('dark')">🌙 Dark</button>
+      <button id="btn-theme-light" onclick="setSiteTheme('light')">☀️ Light</button>
+      <button id="btn-theme-dark" onclick="setSiteTheme('dark')">🌙 Dark</button>
     </div>
     <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
     <a class="nav-link" href="projects.html">Projects →</a>
@@ -316,17 +316,17 @@
 /* ===================== PROJECTS / CHARACTERS (shared across pages) ===================== */
 const SITE_THEME_KEY = 'receipts_site_theme_v1';
 
-function setTheme(theme){
+function setSiteTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('btn-theme-light').classList.toggle('active', theme === 'light');
   document.getElementById('btn-theme-dark').classList.toggle('active', theme === 'dark');
   try { localStorage.setItem(SITE_THEME_KEY, theme); } catch(e){}
 }
 
-function initTheme(){
+function initSiteTheme(){
   let theme = 'dark';
   try { theme = localStorage.getItem(SITE_THEME_KEY) || 'dark'; } catch(e){}
-  setTheme(theme);
+  setSiteTheme(theme);
 }
 
 const PROJECTS_KEY = 'receipts_projects_v1';
@@ -336,10 +336,10 @@ function loadProjectsData(){
   try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); } catch(e){ return []; }
 }
 function getActiveProjectId(){
-  return localStorage.getItem(ACTIVE_PROJECT_KEY) || '';
+  try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || ''; } catch(e){ return ''; }
 }
 function setActiveProjectId(id){
-  localStorage.setItem(ACTIVE_PROJECT_KEY, id || '');
+  try { localStorage.setItem(ACTIVE_PROJECT_KEY, id || ''); } catch(e){}
 }
 function getActiveProject(){
   const id = getActiveProjectId();
