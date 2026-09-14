@@ -307,6 +307,7 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">x / twitter props</span>
+    <a class="nav-link" href="home.html">Home</a>
     <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
     <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="index.html">Main tools</a>
@@ -355,7 +356,7 @@
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="pfDarkMode" onchange="renderProfile()">
+        <input type="checkbox" id="pfDarkMode" onchange="saveDarkModePref('pfDarkMode', this.checked); renderProfile()">
         Dark mode
       </label>
     </div>
@@ -479,7 +480,7 @@ queens, ny</textarea>
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="twDarkMode" onchange="renderTweet()">
+        <input type="checkbox" id="twDarkMode" onchange="saveDarkModePref('twDarkMode', this.checked); renderTweet()">
         Dark mode
       </label>
     </div>
@@ -605,7 +606,7 @@ queens, ny</textarea>
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="dmDarkMode" onchange="renderDms()">
+        <input type="checkbox" id="dmDarkMode" onchange="saveDarkModePref('dmDarkMode', this.checked); renderDms()">
         Dark mode
       </label>
     </div>
@@ -656,7 +657,7 @@ queens, ny</textarea>
     <p class="section-label">Display</p>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="notifDarkMode" onchange="renderNotifs()">
+        <input type="checkbox" id="notifDarkMode" onchange="saveDarkModePref('notifDarkMode', this.checked); renderNotifs()">
         Dark mode
       </label>
     </div>
@@ -886,6 +887,23 @@ function applyCharacterToNotifDraft(accountId){
   if(!c || !a) return;
   document.getElementById('notifActor').value = c.name;
   notifDraftAvatarSrc = a.avatarSrc || c.avatarSrc || null;
+}
+
+const DARKMODE_PREFS_KEY = 'receipts_darkmode_prefs_v1';
+function loadDarkModePrefs(){
+  try { return JSON.parse(localStorage.getItem(DARKMODE_PREFS_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveDarkModePref(id, value){
+  const prefs = loadDarkModePrefs();
+  prefs[id] = value;
+  try { localStorage.setItem(DARKMODE_PREFS_KEY, JSON.stringify(prefs)); } catch(e){}
+}
+function applyDarkModePrefs(ids){
+  const prefs = loadDarkModePrefs();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && prefs.hasOwnProperty(id)) el.checked = prefs[id];
+  });
 }
 
 function getCurrentTimeString(){
@@ -1470,6 +1488,8 @@ document.getElementById('twTime').value = getCurrentTweetTimeString();
 document.querySelectorAll('.status-bar span:first-child').forEach(el => {
   if(!el.id) el.textContent = getCurrentTimeString();
 });
+
+applyDarkModePrefs(['pfDarkMode', 'twDarkMode', 'dmDarkMode', 'notifDarkMode']);
 
 populateProjectSwitcher();
 populateAllCharacterPickers();

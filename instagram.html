@@ -433,6 +433,7 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">instagram-flavored props</span>
+    <a class="nav-link" href="home.html">Home</a>
     <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
     <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="index.html">← Back to main tools</a>
@@ -482,7 +483,7 @@
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="pfDarkMode" onchange="renderProfile()">
+        <input type="checkbox" id="pfDarkMode" onchange="saveDarkModePref('pfDarkMode', this.checked); renderProfile()">
         Dark mode
       </label>
     </div>
@@ -584,7 +585,7 @@ queens, ny</textarea>
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="postDarkMode" onchange="renderPost()">
+        <input type="checkbox" id="postDarkMode" onchange="saveDarkModePref('postDarkMode', this.checked); renderPost()">
         Dark mode
       </label>
     </div>
@@ -685,7 +686,7 @@ queens, ny</textarea>
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="chatDarkMode" onchange="renderChat()">
+        <input type="checkbox" id="chatDarkMode" onchange="saveDarkModePref('chatDarkMode', this.checked); renderChat()">
         Dark mode
       </label>
     </div>
@@ -826,7 +827,7 @@ queens, ny</textarea>
     <p class="section-label">Display</p>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="notesDarkMode" onchange="renderNotes()">
+        <input type="checkbox" id="notesDarkMode" onchange="saveDarkModePref('notesDarkMode', this.checked); renderNotes()">
         Dark mode
       </label>
     </div>
@@ -884,6 +885,23 @@ queens, ny</textarea>
 </div>
 
 <script>
+const DARKMODE_PREFS_KEY = 'receipts_darkmode_prefs_v1';
+function loadDarkModePrefs(){
+  try { return JSON.parse(localStorage.getItem(DARKMODE_PREFS_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveDarkModePref(id, value){
+  const prefs = loadDarkModePrefs();
+  prefs[id] = value;
+  try { localStorage.setItem(DARKMODE_PREFS_KEY, JSON.stringify(prefs)); } catch(e){}
+}
+function applyDarkModePrefs(ids){
+  const prefs = loadDarkModePrefs();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && prefs.hasOwnProperty(id)) el.checked = prefs[id];
+  });
+}
+
 function getCurrentTimeString(){
   const now = new Date();
   let h = now.getHours() % 12;
@@ -1533,6 +1551,8 @@ function addNotesToStoryboard(btnEl){
 document.querySelectorAll('.status-bar span:first-child').forEach(el => {
   if(!el.id) el.textContent = getCurrentTimeString();
 });
+
+applyDarkModePrefs(['pfDarkMode', 'postDarkMode', 'chatDarkMode', 'notesDarkMode']);
 
 populateProjectSwitcher();
 populateAllCharacterPickers();

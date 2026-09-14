@@ -1057,6 +1057,7 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">fake proof for your fic → export .png</span>
+    <a class="nav-link" href="home.html">Home</a>
     <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
     <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="instagram.html">Instagram tools →</a>
@@ -1121,7 +1122,7 @@
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="threadDarkMode" onchange="render()">
+        <input type="checkbox" id="threadDarkMode" onchange="saveDarkModePref('threadDarkMode', this.checked); render()">
         Dark mode
       </label>
     </div>
@@ -1384,7 +1385,7 @@
     </div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="groupLightMode" onchange="renderGroup()">
+        <input type="checkbox" id="groupLightMode" onchange="saveDarkModePref('groupLightMode', this.checked); renderGroup()">
         Light mode
       </label>
     </div>
@@ -1941,6 +1942,23 @@ function downloadPng(){
   });
 }
 
+const DARKMODE_PREFS_KEY = 'receipts_darkmode_prefs_v1';
+function loadDarkModePrefs(){
+  try { return JSON.parse(localStorage.getItem(DARKMODE_PREFS_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveDarkModePref(id, value){
+  const prefs = loadDarkModePrefs();
+  prefs[id] = value;
+  try { localStorage.setItem(DARKMODE_PREFS_KEY, JSON.stringify(prefs)); } catch(e){}
+}
+function applyDarkModePrefs(ids){
+  const prefs = loadDarkModePrefs();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && prefs.hasOwnProperty(id)) el.checked = prefs[id];
+  });
+}
+
 function getCurrentTimeString(){
   const now = new Date();
   let h = now.getHours() % 12;
@@ -2380,6 +2398,8 @@ document.getElementById('lockTime').value = getCurrentTimeString();
 document.querySelectorAll('.status-bar span:first-child').forEach(el => {
   if(!el.id) el.textContent = getCurrentTimeString();
 });
+
+applyDarkModePrefs(['threadDarkMode', 'groupLightMode']);
 
 populateProjectSwitcher();
 populateAllCharacterPickers();

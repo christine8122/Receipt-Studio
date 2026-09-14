@@ -8,13 +8,14 @@ No backend, no accounts. Uploaded photos are processed locally in your browser a
 
 ## Pages
 
+- **`home.html`** — a landing page linking to everything, with a quick status readout (active project, character count, storyboard panel count)
 - **`index.html`** — the main toolkit (text threads, polaroids, calls, group chats, journal pages, lock screens)
 - **`instagram.html`** — Instagram-specific props
 - **`twitter.html`** — X/Twitter-specific props
 - **`projects.html`** — create projects and reusable characters shared across the other pages
 - **`storyboard.html`** — collect panels from any page and arrange them into a sequence
 
-All five link to each other from the top bar, and most pages show a project switcher up there too.
+All six link to each other from the top bar, and most pages show a project switcher up there too.
 
 ## Projects & characters
 
@@ -27,7 +28,7 @@ Create a project on `projects.html`, then build out a roster of characters for i
 
 On every relevant tab across the Main, Instagram, and X/Twitter pages, there's a "Load a saved character" dropdown. Pick a character, then pick which of their accounts/profiles to use for that tab — it fills in the name, handle, avatar, and verified/private status for you, no retyping.
 
-Each project also gets its **own separate Storyboard** — switching projects on `storyboard.html` swaps to that project's saved panels.
+Each project also gets its **own separate Storyboard** — switching projects on `storyboard.html` swaps to that project's saved panels. Any project or character can be duplicated in one click (handy for AU variants), and projects can be exported/imported as backup files.
 
 Note: since this needs to work across separate HTML files, characters and projects are stored in the browser's local storage — see the Notes section below for a hosting caveat.
 
@@ -56,7 +57,7 @@ Note: since this needs to work across separate HTML files, characters and projec
 
 ### Storyboard (`storyboard.html`)
 - A **"+ Add to Storyboard"** button on every tab across the other pages captures that panel.
-- Panels collect as a **slideshow**, scoped to whichever project is active — arrow through them, jump via the thumbnail strip, reorder, or delete individual slides.
+- Panels collect as a **slideshow**, scoped to whichever project is active — arrow through them, jump via the thumbnail strip, drag a thumbnail onto another to reorder, or delete individual slides.
 - Add plain-text **caption cards** to break up the screenshots.
 - **Download Storyboard PNG** stitches every panel into one tall composite image.
 
@@ -74,4 +75,5 @@ On iOS, if the site is added to the home screen, Safari's standalone mode blocks
 
 - All uploaded photos are processed locally in-browser and never uploaded anywhere.
 - The location-share map is a stylized illustration, not a real map lookup — no geocoding or mapping API involved.
-- Projects, characters, and storyboards all use `localStorage` to share data between pages. This works reliably when all five files are hosted from the same origin (like the Vercel link above, or GitHub Pages). If you download the files and open them individually by double-clicking, some browsers block cross-file storage and data won't carry over between pages — run a local server or host them together instead.
+- Dark mode choices on each tab are remembered between visits, also via local storage.
+- Projects, characters, and storyboards all use `localStorage` to share data between pages. This works reliably when all six files are hosted from the same origin (like the Vercel link above, or GitHub Pages). If you download the files and open them individually by double-clicking, some browsers block cross-file storage and data won't carry over between pages — run a local server or host them together instead.

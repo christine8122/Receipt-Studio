@@ -91,6 +91,7 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">projects &amp; reusable characters</span>
+    <a class="nav-link" href="home.html">Home</a>
     <a class="nav-link" href="index.html">Main tools</a>
     <a class="nav-link" href="instagram.html">Instagram tools</a>
     <a class="nav-link" href="twitter.html">X / Twitter tools</a>
@@ -203,6 +204,24 @@ function deleteProject(id){
   if(getActiveProjectId() === id){
     setActiveProjectId(projects.length ? projects[0].id : '');
   }
+  render();
+}
+
+function duplicateProject(id){
+  const projects = loadProjectsData();
+  const proj = projects.find(p => p.id === id);
+  if(!proj) return;
+  const copy = JSON.parse(JSON.stringify(proj));
+  copy.id = 'proj_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  copy.name = proj.name + ' (copy)';
+  copy.createdAt = Date.now();
+  // give duplicated characters fresh ids so they're independent of the originals
+  copy.characters = (copy.characters || []).map(c => Object.assign({}, c, {
+    id: 'char_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)
+  }));
+  projects.push(copy);
+  saveProjectsData(projects);
+  setActiveProjectId(copy.id);
   render();
 }
 
@@ -464,6 +483,20 @@ function deleteCharacter(id){
   render();
 }
 
+function duplicateCharacter(id){
+  const projects = loadProjectsData();
+  const proj = projects.find(p => p.id === getActiveProjectId());
+  if(!proj) return;
+  const char = proj.characters.find(c => c.id === id);
+  if(!char) return;
+  const copy = JSON.parse(JSON.stringify(char));
+  copy.id = 'char_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  copy.name = char.name + ' (copy)';
+  proj.characters.push(copy);
+  saveProjectsData(projects);
+  render();
+}
+
 function render(){
   const projects = loadProjectsData();
   const activeId = getActiveProjectId();
@@ -474,6 +507,7 @@ function render(){
       <span class="pname">${escapeHtml(p.name)}</span>
       ${p.id === activeId ? '<span class="ptag">ACTIVE</span>' : `<button class="btn-small" onclick="selectProject('${p.id}')">Use</button>`}
       <button class="btn-small" onclick="exportProject('${p.id}')" title="Export this project">⬇</button>
+      <button class="btn-small" onclick="duplicateProject('${p.id}')" title="Duplicate this project">⧉</button>
       <button class="btn-small danger" onclick="deleteProject('${p.id}')">✕</button>
     </div>
   `).join('');
@@ -545,6 +579,7 @@ function render(){
             </div>
             <div class="char-actions">
               <button class="btn-small" onclick="editCharacter('${c.id}')">Edit</button>
+              <button class="btn-small" onclick="duplicateCharacter('${c.id}')">Duplicate</button>
               <button class="btn-small danger" onclick="deleteCharacter('${c.id}')">Delete</button>
             </div>
           </div>

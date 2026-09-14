@@ -218,6 +218,9 @@
     justify-content:center;
   }
   .thumb.active{ border-color: var(--accent); }
+  .thumb{ cursor: grab; }
+  .thumb.dragging{ opacity: 0.4; }
+  .thumb.drag-over{ border-color: var(--accent); box-shadow: 0 0 0 2px rgba(245,166,35,0.4); }
   .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
   .thumb.caption-thumb{
     font-family:'Caveat', cursive;
@@ -249,6 +252,7 @@
   </div>
   <div class="topbar-right">
     <span class="brand-sub">arrange your panels into a scene</span>
+    <a class="nav-link" href="home.html">Home</a>
     <select id="projectSwitcher" class="project-switcher" onchange="onProjectSwitcherChange(this.value)"></select>
     <a class="nav-link" href="projects.html">Projects →</a>
     <a class="nav-link" href="index.html">Main tools</a>
@@ -335,6 +339,7 @@ function onProjectSwitcherChange(id){
 /* ===================== STORYBOARD ===================== */
 let panels = [];
 let currentIndex = 0;
+let dragSrcIndex = null;
 
 function loadPanels(){
   try {
@@ -377,17 +382,6 @@ function addCaptionCard(){
 function updateCaptionText(idx, value){
   panels[idx].text = value;
   savePanels();
-}
-
-function movePanel(dir){
-  const newIdx = currentIndex + dir;
-  if(newIdx < 0 || newIdx >= panels.length) return;
-  const tmp = panels[currentIndex];
-  panels[currentIndex] = panels[newIdx];
-  panels[newIdx] = tmp;
-  currentIndex = newIdx;
-  savePanels();
-  render();
 }
 
 function deleteCurrentPanel(){
@@ -482,19 +476,39 @@ function render(){
   const controls = document.createElement('div');
   controls.className = 'slide-controls';
   controls.innerHTML = `
-    <button onclick="movePanel(-1)" ${currentIndex === 0 ? 'disabled' : ''}>← Move earlier</button>
-    <button onclick="movePanel(1)" ${currentIndex === panels.length - 1 ? 'disabled' : ''}>Move later →</button>
     <button class="del-btn" onclick="deleteCurrentPanel()">Delete slide</button>
   `;
   wrap.appendChild(controls);
 
-  // thumbnail strip
+  // thumbnail strip — drag a thumbnail onto another to reorder
   const strip = document.createElement('div');
   strip.className = 'thumb-strip';
   panels.forEach((tp, idx) => {
     const thumb = document.createElement('div');
     thumb.className = 'thumb' + (idx === currentIndex ? ' active' : '') + (tp.type === 'caption' ? ' caption-thumb' : '');
+    thumb.draggable = true;
     thumb.onclick = () => goToSlide(idx);
+    thumb.ondragstart = (e) => {
+      dragSrcIndex = idx;
+      thumb.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(idx));
+    };
+    thumb.ondragend = () => {
+      thumb.classList.remove('dragging');
+      dragSrcIndex = null;
+    };
+    thumb.ondragover = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      thumb.classList.add('drag-over');
+    };
+    thumb.ondragleave = () => thumb.classList.remove('drag-over');
+    thumb.ondrop = (e) => {
+      e.preventDefault();
+      thumb.classList.remove('drag-over');
+      onThumbDrop(idx);
+    };
     if(tp.type === 'image'){
       thumb.innerHTML = `<img src="${tp.img}" alt="">`;
     } else {
@@ -503,6 +517,24 @@ function render(){
     strip.appendChild(thumb);
   });
   wrap.appendChild(strip);
+
+  const dragHint = document.createElement('p');
+  dragHint.className = 'hint';
+  dragHint.style.textAlign = 'center';
+  dragHint.textContent = 'Drag a thumbnail onto another to reorder.';
+  wrap.appendChild(dragHint);
+}
+
+function onThumbDrop(targetIdx){
+  if(dragSrcIndex === null || dragSrcIndex === targetIdx) return;
+  const moved = panels.splice(dragSrcIndex, 1)[0];
+  panels.splice(targetIdx, 0, moved);
+  if(currentIndex === dragSrcIndex) currentIndex = targetIdx;
+  else if(dragSrcIndex < currentIndex && targetIdx >= currentIndex) currentIndex--;
+  else if(dragSrcIndex > currentIndex && targetIdx <= currentIndex) currentIndex++;
+  dragSrcIndex = null;
+  savePanels();
+  render();
 }
 
 function buildExportContainer(){
